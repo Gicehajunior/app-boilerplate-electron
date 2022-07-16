@@ -1,12 +1,24 @@
 {
-    "name": "business-elite",
+    "name": "app-boilerplate-electron",
     "version": "1.0.0",
     "description": "Hello World!",
     "main": "main.js",
     "scripts": {
         "start": "electron ."
     },
-    "author": "Laban Kiarie",
+    "authors": [
+        {
+            "name": "Giceha Junior",
+            "email": "gicehajunior76@dapahascomp.com",
+            "role": "Backend Developer",
+            "homepage": "https://www.github.com/Gicehajunior"
+        }
+    ],
+    "support": {
+        "email": "support@dapahascomp.com"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "license": "MIT",
     "devDependencies": {
         "electron": "^19.0.8"

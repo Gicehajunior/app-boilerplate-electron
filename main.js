@@ -12,8 +12,8 @@ const DbConn = DB.sqlite3_connection(process.env.DB_NAME);
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 3200,
-    height: 1050,
+    width: 800,
+    height: 600,
     webPreferences: {
       preload: path.join(__dirname, 'public/js/preload.js')
     }, 
