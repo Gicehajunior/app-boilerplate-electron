@@ -1,6 +1,13 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+require('dotenv').config();
+
+const Database = require("./config/database/database");
+
+const DB = new Database();
+const DbConn = DB.sqlite3_connection("business_elite");
+
 
 const createWindow = () => {
   // Create the browser window.
@@ -17,7 +24,7 @@ const createWindow = () => {
   mainWindow.setMenu(null)
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  // mainWindow.webContents.openDevTools()
 }
 
 // This method will be called when Electron has finished
@@ -30,7 +37,7 @@ app.whenReady().then(() => {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
-        createWindow();
+      createWindow();
     }
   });
 });
@@ -46,6 +53,6 @@ app.on('window-all-closed', () => {
 
 const Routes = require("./routes/native");
 
-Routes(ipcMain);
+Routes(ipcMain, DbConn);
 
   

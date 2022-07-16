@@ -17,6 +17,7 @@ class Database {
         const db = new sqlite3.Database('config/database/business_elite.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
         (err) => { 
             if (err) {
+                // Crone jobs will be implemented to handle this type of error!
                 console.log(err);
                 if (err.message == "SQLITE_CANTOPEN: unable to open database file") {
                     db.run(`CREATE DATABASE [${business_elite_database}]`);
@@ -26,8 +27,8 @@ class Database {
 
                 return err.message;
             } 
-        }); 
-
+        });
+        
         return db
     }
 }

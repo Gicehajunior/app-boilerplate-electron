@@ -1,11 +1,5 @@
 const path = require('path');
 const AuthController = require("../app/https/auth/AuthController");
-const Database = require("../config/database/database");
-
-const DB = new Database();
-const DbConn = DB.sqlite3_connection("business_elite");
-
-const Auth = new AuthController(DbConn);
 
 /**
  * PUT your routes here, 
@@ -15,30 +9,30 @@ const Auth = new AuthController(DbConn);
  * 
  * @return response
  */
-const Routes = (ipcMain) => {  
+const Routes = (ipcMain, DbConn) => {  
+    const Auth = new AuthController(DbConn);
      
     ipcMain.handle('createTable', (event, table) => {
-        const response = Auth.createTable(table);
-        event.sender.send("create-table", `${response}`);
+        const response = Auth.createTable(table); 
+        response.then(value => {  
+            event.sender.send("create-table", `${value}`);
+        });
     });
 
     ipcMain.handle('registerUser', (event, usersInfo) => { 
-        const response = Auth.saveUsers(usersInfo); 
-        response.then(value => { 
-            console.log(value);
+        const response = Auth.saveUsers(usersInfo);  
+        response.then(value => {  
             event.sender.send("save-users", `${value}`);
         }); 
     });
 
     ipcMain.handle('loginUser', (event, usersInfo) => {   
         const response = Auth.loginUsers(usersInfo); 
-        response.then(value => {
-            console.log(value);
+        response.then(value => { 
             event.sender.send("login-response", `${value}`);
         });  
     });
-}
-
+} 
 
 module.exports = Routes;
 
