@@ -46,8 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 ipcRenderer.invoke("registerUser", JSON.stringify(usersInfo)); 
                 
-                ipcRenderer.on("save-users", (event, response) => {
-                    console.log(response); 
+                ipcRenderer.on("save-users", (event, response) => { 
                     if (response.includes("user exists")) { 
                         users_message.innerHTML = `<small>Seems you're already registered. Please proceed to login!</small>`;
                         users_message.style.color = "green";
@@ -80,10 +79,9 @@ window.addEventListener('DOMContentLoaded', () => {
                     "password": password.value, 
                 };
 
-                ipcRenderer.invoke("loginUser", JSON.stringify(usersInfo)); 
+                const loginUser = ipcRenderer.invoke("loginUser", JSON.stringify(usersInfo)); 
 
-                ipcRenderer.on("login-response", (event, response) => {
-                    console.log(response); 
+                ipcRenderer.on("login-response", (event, response) => { 
                     if (response.includes("password matches")) { 
                         users_message.innerHTML = `<small>Login Successfull, Navigating to Dashboard. Please wait...</small>`;
                         users_message.style.color = "green";
@@ -97,7 +95,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         users_message.style.color = "green";
                     }
                     else if (response.includes("no user found")) {
-                        users_message.innerHTML = `<small>No user found with that Username. Please register to procedd.!</small>`;
+                        users_message.innerHTML = `<small>No user found with that Username. Please register to procedd!</small>`;
                         users_message.style.color = "green";
                     }
                 }); 
