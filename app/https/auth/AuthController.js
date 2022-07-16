@@ -92,8 +92,7 @@ class AuthController {
                 if (row == undefined) {
                     resolve(`no user found`);
                 }
-                else if (row.email == usersInfo.email) { 
-                    console.log(row);
+                else if (row.email == usersInfo.email) {  
                     bcrypt.compare(usersInfo.password, row.password, function(err, result) {
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err);
