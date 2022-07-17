@@ -5,8 +5,22 @@ require('dotenv').config();
 
 const Database = require("./config/database/database");
 
-const DB = new Database();
-const DbConn = DB.sqlite3_connection(process.env.DB_NAME);
+const DB = new Database(
+  process.env.DB_CONNECTION, 
+  process.env.DB_HOST, 
+  process.env.DB_PORT, 
+  process.env.DB_NAME, 
+  process.env.DB_USERNAME,
+  process.env.DB_PASSWORD
+);
+
+let DbConn;
+if (process.env.DB_CONNECTION == "mysql") {
+  DbConn = DB.mysql_connection(process.env.DB_NAME);
+}
+else if (process.env.DB_CONNECTION == "sqlite") {
+  DbConn = DB.sqlite3_connection(process.env.DB_NAME);
+}
 
 const createWindow = () => {
   // Create the browser window.
