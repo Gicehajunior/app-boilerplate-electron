@@ -9,7 +9,7 @@ const AuthController = require("../app/https/auth/AuthController");
  * 
  * @return response
  */
-const Routes = (ipcMain, DbConn) => {  
+const Routes = (BrowserWindow, ipcMain, DbConn) => {  
     const Auth = new AuthController(DbConn);
      
     ipcMain.handle('createTable', (event, table) => {
@@ -31,6 +31,10 @@ const Routes = (ipcMain, DbConn) => {
         response.then(value => { 
             event.sender.send("login-response", `${value}`);
         });  
+    });
+
+    ipcMain.handle('logoutUser', (event) => {   
+        Auth.logoutUser(BrowserWindow);  
     });
 } 
 

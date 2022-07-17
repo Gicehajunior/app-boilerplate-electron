@@ -30,6 +30,8 @@
     "dependencies": {
         "bcrypt": "^5.0.1",
         "dotenv": "^16.0.1",
-        "sqlite3": "^5.0.9"
+        "npm": "^8.14.0",
+        "sqlite3": "^5.0.9",
+        "validator": "^13.7.0"
     }
 }
