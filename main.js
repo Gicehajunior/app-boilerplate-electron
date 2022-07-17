@@ -8,7 +8,6 @@ const Database = require("./config/database/database");
 const DB = new Database();
 const DbConn = DB.sqlite3_connection(process.env.DB_NAME);
 
-
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({

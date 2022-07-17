@@ -4,6 +4,7 @@
     "description": "Hello World!",
     "main": "main.js",
     "scripts": {
+        "postinstall": "bower install",
         "start": "electron ."
     },
     "authors": [
@@ -21,7 +22,10 @@
     "prefer-stable": true,
     "license": "MIT",
     "devDependencies": {
-        "electron": "^19.0.8"
+        "bower": "^1.8.14",
+        "electron": "^19.0.8",
+        "grunt": "^1.5.3",
+        "grunt-bower-task": "^0.6.2"
     },
     "dependencies": {
         "bcrypt": "^5.0.1",
