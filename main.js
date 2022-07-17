@@ -52,6 +52,6 @@ app.on('window-all-closed', () => {
 
 const Routes = require("./routes/native");
 
-Routes(ipcMain, DbConn);
+Routes(BrowserWindow, ipcMain, DbConn);
 
   

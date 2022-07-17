@@ -1,20 +1,31 @@
 const bcrypt = require('bcrypt'); 
-const Database = require("../../../config/database/database");
-
+const EmailValidator = require('validator');  
+const path = require('path');
 
 class AuthController {
 
     constructor(db) {
         this.db = db;
+
+        this.current_directory = process.cwd();
+
         let datetime_now = new Date();
         datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');
 
         this.created_at = datetime_now;
-        this.updated_at = datetime_now;
+        this.updated_at = datetime_now; 
     }
 
     index() {
 
+    }
+
+    validatePhone() {
+        return true;
+    }
+
+    isObject(variable){
+        return (!!variable) && (a.constructor === Object);
     }
 
     saveUsers(stringifiedUsersInfo) {  
@@ -22,15 +33,23 @@ class AuthController {
         usersInfo.created_at = this.created_at;
         usersInfo.updated_at = this.updated_at; 
 
-        const getRow = (email, callback) => { 
-            this.db.all(`SELECT * FROM users WHERE email = ?`, [email], function (err, rows) {
-              if(err){
-                // Crone jobs will be implemented to handle this type of error!
-                console.log(err);
-              }else{
-                callback(rows[0]);
-              }
-            });
+        const getRow = (callback) => { 
+            if (!EmailValidator.isEmail(usersInfo.email)) { 
+                callback("Invalid email");
+            }
+            else if (this.validatePhone(usersInfo.contact) == false) {
+                callback("Invalid contact");
+            }
+            else {
+                this.db.all(`SELECT * FROM users WHERE email = ?`, [usersInfo.email], (err, rows) => {
+                    if(err){
+                        // Crone jobs will be implemented to handle this type of error!
+                        console.log(err);
+                    }else{
+                        callback(rows[0]);
+                    }
+                });
+            }
         }
         const response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
@@ -42,32 +61,40 @@ class AuthController {
                     if (row.email == usersInfo.email) {  
                         exists.push(row); 
                     }  
+                    else if (row.includes("Invalid email")) {
+                        resolve("Invalid email");
+                    }
+                    else if (row.includes("Invalid contact")) {
+                        resolve("Invalid contact");
+                    } 
                 } 
-                
-                if (exists.length > 0) { 
-                    resolve(`user exists`);
-                }
-                else { 
-                    bcrypt.genSalt(saltRounds, (err, salt) => {
-                        bcrypt.hash(usersInfo.password, salt, (err, hash) => {
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);   
-                            if (hash == '') {
-                                resolve(`Please input a strong password!`);
-                            }
-                            else {
-                                stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, usersInfo.created_at, usersInfo.updated_at);
-                    
-                                if (stmt.finalize()) {
-                                    resolve(`Registration successfull!`);
-                                } 
-                            }
+                 
+                if (typeof row !== "string") {
+                    if (exists.length > 0) { 
+                        resolve(`user exists`);
+                    }
+                    else { 
+                        bcrypt.genSalt(saltRounds, (err, salt) => {
+                            bcrypt.hash(usersInfo.password, salt, (err, hash) => {
+                                // Crone jobs will be implemented to handle this type of error!
+                                console.log(err);   
+                                if (hash == '') {
+                                    resolve(`Please input a strong password!`);
+                                }
+                                else {
+                                    stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, usersInfo.created_at, usersInfo.updated_at);
+                        
+                                    if (stmt.finalize()) {
+                                        resolve(`Registration successfull!`);
+                                    } 
+                                }
+                            });
                         });
-                    });
+                    }
                 }
             }
 
-            const row = getRow(usersInfo.email, callbackFunc);
+            const row = getRow(callbackFunc);
         
         });
         return response_promise;
@@ -77,23 +104,33 @@ class AuthController {
         const usersInfo = JSON.parse(stringifiedUsersInfo);  
         
         const getRow = (email, callback) => { 
-            this.db.all(`SELECT * FROM users WHERE email = ?`, [email], function (err, rows) {
-              if(err){
-                // Crone jobs will be implemented to handle this type of error!
-                console.log(err);
-              }else{
-                callback(rows[0]);
-              }
-            });
+            if (!EmailValidator.isEmail(usersInfo.email)) { 
+                callback("Invalid email");
+            }
+            else {
+                this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
+                if(err){
+                    // Crone jobs will be implemented to handle this type of error!
+                    console.log(err);
+                }else{
+                    callback(rows[0]);
+                }
+                });
+            }
         }
 
         const response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
                 if (row == undefined) {
                     resolve(`no user found`);
+                }  
+                else if (typeof row == "string") {
+                    if (row.includes("Invalid email")) {
+                        resolve("Invalid email");
+                    }
                 }
                 else if (row.email == usersInfo.email) {  
-                    bcrypt.compare(usersInfo.password, row.password, function(err, result) {
+                    bcrypt.compare(usersInfo.password, row.password, (err, result) => {
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err);
                         if (result == true) { 
@@ -133,7 +170,10 @@ class AuthController {
         return response_promise;
     }
     
-
+    logoutUser(BrowserWindow) {
+        const CurrentWindow = BrowserWindow.getFocusedWindow();
+        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
+    }
 }
 
 module.exports = AuthController;
