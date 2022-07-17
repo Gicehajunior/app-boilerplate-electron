@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config();
 
@@ -16,7 +16,7 @@ const createWindow = () => {
     webPreferences: {
       preload: path.join(__dirname, 'public/js/preload.js')
     }, 
-  });
+  }); 
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'resources/auth/login.html'));
