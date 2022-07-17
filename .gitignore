@@ -1,6 +1,6 @@
 .env
 node_modules/
-public/bootstrap/css/
-public/bootstrap/js/
+public/assets/bootstrap
+public/assets/jquery
 
 

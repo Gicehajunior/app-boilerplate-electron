@@ -52,7 +52,7 @@ window.addEventListener('DOMContentLoaded', () => {
                         users_message.style.color = "green";
                     }
                     else if (response.includes("Please input a strong password!")) {
-                        users_message.innerHTML = `<small>Password to short or too long. Please fill in a strong password!</small>`;
+                        users_message.innerHTML = `<small>Password too short or too long. Please fill in a strong password!</small>`;
                         users_message.style.color = "green";
                     }
                     else if (response.includes("Registration successfull!")) {

@@ -1,0 +1,17 @@
+{
+    "name": "assets-copier",
+    "dependencies": {
+        "jquery": "~3.4.1",
+        "bootstrap": "~4.6.1"
+    }, 
+    "exportsOverride": {
+        "jquery": {
+          "js": "dist/*.js"
+        },
+        "bootstrap": {
+          "js": "dist/js/*.js",
+          "css" : "dist/css/*.css",
+          "fonts" : "dist/fonts/*.*"
+        }
+      }
+}
