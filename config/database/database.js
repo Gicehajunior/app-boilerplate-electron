@@ -8,25 +8,28 @@ class Database {
         this.database_port = database_port;
         this.database_name = database_name;
         this.database_username = database_username,
-        this.database_password = database_password; 
+        this.database_password = database_password;  
     }
 
-    mysql_connection() {
+    mysql_connection() { 
         const connection = mysql.createConnection({
             host: this.host_name,
-            user: this.database_name,
-            password: this.database_password
+            user: this.database_username,
+            password: this.database_password,
+            database: this.database_name
         });
           
         connection.connect((err) => {
             if (err) {
+                // Crone jobs will be implemented to handle this type of error!
                 throw err;
             }
             else {
-                console.log("Connected!");
-                return connection;
+                console.log(`Mysql Database Connected on Port ${this.database_port}!`); 
             }
         });
+
+        return connection;
     }
 
     sqlite3_connection(business_elite_database) {  
