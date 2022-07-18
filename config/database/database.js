@@ -11,6 +11,36 @@ class Database {
         this.database_password = database_password;  
     }
 
+    create_mysql_database() { 
+        const connection = mysql.createConnection({
+            host: this.host_name,
+            user: this.database_username,
+            password: this.database_password
+        });
+        
+        const connection_response_promise = new Promise(resolve => {
+            connection.connect((err) => {
+                if (err) {
+                    // Crone jobs will be implemented to handle this type of error! 
+                    resolve(err.message);
+                } 
+                else {
+                    connection.query(`CREATE DATABASE ${this.database_name}`, (err, result) => {
+                        if (err) {
+                            resolve(err);
+                        } 
+                        else { 
+                            resolve(`${this.database_name} database created`);
+                        }
+                    });
+                } 
+            });
+        }); 
+
+        return connection_response_promise;
+    }
+    
+
     mysql_connection() { 
         const connection = mysql.createConnection({
             host: this.host_name,
@@ -19,17 +49,19 @@ class Database {
             database: this.database_name
         });
           
-        connection.connect((err) => {
-            if (err) {
-                // Crone jobs will be implemented to handle this type of error!
-                throw err;
-            }
-            else {
-                console.log(`Mysql Database Connected on Port ${this.database_port}!`); 
-            }
+        const connection_response_promise = new Promise(resolve => { 
+            connection.connect((err) => {
+                if (err) {  
+                    resolve(err.message);
+                }
+                else {
+                    console.log(`Mysql Database Connected on Port ${this.database_port}!`); 
+                    resolve(connection);
+                }
+            });
         });
 
-        return connection;
+        return connection_response_promise;
     }
 
     sqlite3_connection(business_elite_database) {  

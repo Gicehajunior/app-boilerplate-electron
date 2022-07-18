@@ -14,13 +14,6 @@ const DB = new Database(
   process.env.DB_PASSWORD
 );
 
-let DbConn;
-if (process.env.DB_CONNECTION == "mysql") {
-  DbConn = DB.mysql_connection(process.env.DB_NAME);
-}
-else if (process.env.DB_CONNECTION == "sqlite") {
-  DbConn = DB.sqlite3_connection(process.env.DB_NAME);
-}
 
 const createWindow = () => {
   // Create the browser window.
@@ -66,6 +59,16 @@ app.on('window-all-closed', () => {
 
 const Routes = require("./routes/native");
 
-Routes(BrowserWindow, ipcMain, DbConn);
+let DbConn;
+if (process.env.DB_CONNECTION == "mysql") {
+  let connection_response = DB.mysql_connection(process.env.DB_NAME);
+  connection_response.then(DbConn => {  
+    Routes(BrowserWindow, ipcMain, DbConn);
+  });  
+}
+else if (process.env.DB_CONNECTION == "sqlite") {
+  DbConn = DB.sqlite3_connection(process.env.DB_NAME);
+  Routes(BrowserWindow, ipcMain, DbConn);
+} 
 
   
