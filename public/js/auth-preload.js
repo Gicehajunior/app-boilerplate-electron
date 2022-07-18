@@ -128,9 +128,11 @@ class Auth {
     logoutUser() {
         const logoutBtn = document.getElementById("logout-btn");
 
-        logoutBtn.addEventListener('click', () => {
-            ipcRenderer.invoke("logoutUser");
-        });
+        if (document.body.contains(logoutBtn)) {
+            logoutBtn.addEventListener('click', () => {
+                ipcRenderer.invoke("logoutUser");
+            });
+        }
     }
 }
 

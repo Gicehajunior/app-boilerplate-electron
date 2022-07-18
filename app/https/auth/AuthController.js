@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const EmailValidator = require('validator');  
 const path = require('path');
 const {phone} = require('phone');
+const fs = require("fs");
 
 class AuthController {
 
@@ -192,6 +193,32 @@ class AuthController {
                             console.log(err);
                         } 
                         else if (result == true) { 
+                            // create session by creating a session object on memory:
+                            const sessionObject = {
+                                "id": row.id ? row.id : 0,
+                                "whoiam": row.whoiam,
+                                "username": row.username,
+                                "email": row.email,
+                                "contact": row.contact,
+                                "created_at": row.created_at,
+                                "updated_at": row.updated_at
+                            }; 
+
+                            const fs = require('fs');
+                            
+                            fs.writeFile(
+                                `${this.current_directory}/config/database/dump/eab-session.json`, 
+                                JSON.stringify(sessionObject),  
+                                'utf8',  
+                                (err, data) => {
+                                    if (err){
+                                        console.log(err);
+                                    } else {
+                                        console.log("session successfully saved!");
+                                    }
+                                }
+                            );
+
                             resolve(`password matches`);
                         }
                         else {
@@ -241,8 +268,19 @@ class AuthController {
         return response_promise;
     }
     
-    logoutUser(BrowserWindow) {
+    logoutUser(BrowserWindow) { 
         const CurrentWindow = BrowserWindow.getFocusedWindow();
+        
+        fs.unlink(`${this.current_directory}/config/database/dump/eab-session.json`, (err) => {
+            if(err && err.code == 'ENOENT') { 
+                console.info("File doesn't exist, won't remove it.");
+            } else if (err) { 
+                console.error("Error occurred while trying to remove file");
+            } else {
+                console.info(`User Session Cleared. User got logged out!`);
+            }
+        });
+
         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
     }
 }
