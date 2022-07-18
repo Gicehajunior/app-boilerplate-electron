@@ -39,18 +39,15 @@ The following are the prerequisites to use:
     or Download a zip file using,
     <a href="https://github.com/Gicehajunior/app-boilerplate-electron/archive/refs/heads/main.zip">https://github.com/Gicehajunior/app-boilerplate-electron/archive/refs/heads/main.zip</a>
 2) Move your project to the directory of your preference. 
-3) Open the powershell and do the following respectively:</br>
-    :\>cd project_directory </br>
-    :\>npm install
-4) Open the project in your IDE of preference.
+3) Open the project in your IDE of preference.
     Recommended one is; Visual Studio Code (VsCode).
-5) Create .env file on the root folder.
-6) Open .env-example and copy the it's contents to created .env file
-7) Set the Required environment variables correctly.
+4) Create .env file on the root folder.
+5) Open .env-example and copy the it's contents to created .env file
+6) Set the Required environment variables correctly.
     
 #### Database
 The database is upon on your preference. </br>
-    8) Do the following: </br>
+    7) Do the following: </br>
         For: </br>
         > SQLite: </br>
         To use SQLite database, On .env file, set DB_CONNECTION as "sqlite" and DB_NAME your 
@@ -62,7 +59,9 @@ The database is upon on your preference. </br>
 ### Run Application Now
 To run your application after doing the above, Is simple as:
 
-#### On your Opened Powershell, Just do: </br>
+#### Open the powershell and do the following respectively:</br>
+    :\>cd project_directory
+    :\>npm install
     :\>npm start
 
 
