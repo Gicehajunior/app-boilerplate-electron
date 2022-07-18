@@ -1,11 +1,27 @@
 const { remote, contextBridge, ipcRenderer } = require('electron');
 const path = require('path'); 
+const AppUserSession = require("../../config/services/sessionService");
 
 class Dashboard {
     constructor() {
         this.current_directory = process.cwd();
         let datetime_now = new Date();
         this.datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');  
+    }
+
+    index() { 
+        const sessionObject = new AppUserSession();
+        const session = sessionObject.session(); 
+
+        const UsernameDomElements = [
+            document.querySelector(".username-in-session")
+        ];
+
+        UsernameDomElements.forEach(UsernameDomElement => {
+            if (document.body.contains(UsernameDomElement)) {
+                UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${session.username}`;
+            }
+        });
     }
 
     save() {
