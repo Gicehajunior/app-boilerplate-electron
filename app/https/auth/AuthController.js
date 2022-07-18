@@ -21,7 +21,7 @@ class AuthController {
 
     validatePhone(phonenumber) {
         const response = phone(phonenumber, {country: `${this.country}`}); 
-        console.log(response);
+        
         return response;
     }
 
