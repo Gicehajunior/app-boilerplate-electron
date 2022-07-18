@@ -19,6 +19,7 @@ const gruntFunction = (grunt) => {
     });
   
     grunt.loadNpmTasks('grunt-bower-task'); 
+    grunt.registerTask('set-assets', ['grunt-bower-task']);
 };
 
 module.exports = gruntFunction;
