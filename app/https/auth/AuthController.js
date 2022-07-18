@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
 const path = require('path');
+const {phone} = require('phone');
 
 class AuthController {
 
@@ -8,6 +9,7 @@ class AuthController {
         this.db = db;
 
         this.current_directory = process.cwd();
+        this.country = process.env.COUNTRY;
         this.database_type = process.env.DB_CONNECTION;
 
         let datetime_now = new Date();
@@ -17,12 +19,10 @@ class AuthController {
         this.updated_at = datetime_now; 
     }
 
-    index() {
-
-    }
-
-    validatePhone() {
-        return true;
+    validatePhone(phonenumber) {
+        const response = phone(phonenumber, {country: `${this.country}`}); 
+        
+        return response;
     }
 
     isObject(variable){
@@ -38,7 +38,7 @@ class AuthController {
             if (!EmailValidator.isEmail(usersInfo.email)) { 
                 callback("Invalid email");
             }
-            else if (this.validatePhone(usersInfo.contact) == false) {
+            else if (this.validatePhone(usersInfo.contact).isValid == false) {
                 callback("Invalid contact");
             }
             else {
