@@ -8,6 +8,7 @@ class AuthController {
         this.db = db;
 
         this.current_directory = process.cwd();
+        this.database_type = process.env.DB_CONNECTION;
 
         let datetime_now = new Date();
         datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');
@@ -41,20 +42,39 @@ class AuthController {
                 callback("Invalid contact");
             }
             else {
-                this.db.all(`SELECT * FROM users WHERE email = ?`, [usersInfo.email], (err, rows) => {
-                    if(err){
-                        // Crone jobs will be implemented to handle this type of error!
-                        console.log(err);
-                    }else{
-                        callback(rows[0]);
-                    }
-                });
+                if (this.database_type == "sqlite") { 
+                    this.db.all(`SELECT * FROM users WHERE email = ?`, [usersInfo.email], (err, rows) => {
+                        if(err){
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err); 
+                        }else{
+                            callback(rows[0]);
+                        }
+                    });
+                }
+                else if (this.database_type == "mysql") {
+                    const sql = `SELECT * FROM users WHERE email = '${usersInfo.email}'`;
+                    this.db.query(sql, (err, rows) => {
+                        if (err) {
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err); 
+                        }
+                        else { 
+                            callback(rows[0]);
+                        }
+                    });  
+                }
             }
         }
         const response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
-                const stmt = this.db.prepare(`INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)`);
-
+                let stmt;
+                if (this.database_type == "sqlite") {
+                    stmt = this.db.prepare(`INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)`);
+                }
+                else if (this.database_type == "mysql") {
+                    stmt = `INSERT INTO users (whoiam, username, email, contact, password, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)`;
+                }
                 const saltRounds = 10; 
                 let exists = [];
                 if (row !== undefined) { 
@@ -77,16 +97,38 @@ class AuthController {
                         bcrypt.genSalt(saltRounds, (err, salt) => {
                             bcrypt.hash(usersInfo.password, salt, (err, hash) => {
                                 // Crone jobs will be implemented to handle this type of error!
-                                console.log(err);   
+                                if (err) {
+                                    console.log(err);
+                                }   
+                                else 
                                 if (hash == '') {
                                     resolve(`Please input a strong password!`);
                                 }
                                 else {
-                                    stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, usersInfo.created_at, usersInfo.updated_at);
-                        
-                                    if (stmt.finalize()) {
-                                        resolve(`Registration successfull!`);
-                                    } 
+                                    if (this.database_type == "sqlite") {
+                                        stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, usersInfo.created_at, usersInfo.updated_at);
+                            
+                                        if (stmt.finalize()) {
+                                            resolve(`Registration successfull!`);
+                                        } 
+                                        else {
+                                            resolve(`Registration failed!`);
+                                        }
+                                    }
+                                    else if (this.database_type == "mysql") {
+                                        this.db.query(stmt, [usersInfo.whoiam.toString(), usersInfo.username.toString(), usersInfo.email.toString(), usersInfo.contact.toString(), hash.toString(), usersInfo.created_at.toString(), usersInfo.updated_at.toString()], (err, result) => {
+                                            if (err) {
+                                                if (err) {
+                                                    console.log(err);
+                                                }
+                                                else 
+                                                resolve(`Registration failed!`);
+                                            }
+                                            else {
+                                                resolve(`Registration successfull!`);
+                                            }
+                                        }); 
+                                    }
                                 }
                             });
                         });
@@ -108,14 +150,28 @@ class AuthController {
                 callback("Invalid email");
             }
             else {
-                this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
-                if(err){
-                    // Crone jobs will be implemented to handle this type of error!
-                    console.log(err);
-                }else{
-                    callback(rows[0]);
+                if (this.database_type == "sqlite") {
+                    this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
+                        if(err){
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err); 
+                        }else{
+                            callback(rows[0]);
+                        }
+                    });
                 }
-                });
+                else if (this.database_type == "mysql") {
+                    const sql = `SELECT * FROM users WHERE email = '${usersInfo.email}'`;
+                    this.db.query(sql, (err, rows) => {
+                        if (err) {
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err);
+                        }
+                        else { 
+                            callback(rows[0]);
+                        }
+                    });  
+                }
             }
         }
 
@@ -132,8 +188,10 @@ class AuthController {
                 else if (row.email == usersInfo.email) {  
                     bcrypt.compare(usersInfo.password, row.password, (err, result) => {
                         // Crone jobs will be implemented to handle this type of error!
-                        console.log(err);
-                        if (result == true) { 
+                        if (err) {
+                            console.log(err);
+                        } 
+                        else if (result == true) { 
                             resolve(`password matches`);
                         }
                         else {
@@ -155,16 +213,29 @@ class AuthController {
 
     createTable(table) { 
         const response_promise = new Promise(resolve => {
-            try { 
-                this.db.serialize(() => {
-                    this.db.run(`CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`);
-                    
-                    resolve(`${table} table creation success`);
-                });  
-            } catch (error) {
-                resolve(`${table} table creation failed`);
-            } 
- 
+            if (this.database_type == "sqlite") {
+                try { 
+                    this.db.serialize(() => {
+                        this.db.run(`CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`);
+                        
+                        resolve(`${table} table creation success`);
+                    });  
+                } catch (error) {
+                    resolve(`${table} table creation failed`);
+                } 
+            }
+            else if (this.database_type == "mysql") { 
+                const sql = `CREATE TABLE IF NOT EXISTS ${table} (id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
+                this.db.query(sql, (err, result) => {
+                    if (err) {
+                        console.log(err); 
+                        resolve(`${table} table creation failed`);
+                    }
+                    else {
+                        resolve(`${table} table creation success`);
+                    }
+                }); 
+            }
         });
 
         return response_promise;
