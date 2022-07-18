@@ -33,7 +33,7 @@ class Database {
     }
 
     sqlite3_connection(business_elite_database) {  
-        const db = new sqlite3.Database(`config/database/dump/${business_elite_database}.db`, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
+        const db = new sqlite3.Database(business_elite_database ? `config/database/dump/${business_elite_database}.db` : ':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
         (err) => { 
             if (err) {
                 // Crone jobs will be implemented to handle this type of error!
