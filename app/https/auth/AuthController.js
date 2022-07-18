@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 const EmailValidator = require('validator');  
 const path = require('path');
 const {phone} = require('phone');
-const { fs, vol } = require("memfs");
+const fs = require("fs");
 
 class AuthController {
 
@@ -195,7 +195,7 @@ class AuthController {
                         else if (result == true) { 
                             // create session by creating a session object on memory:
                             const sessionObject = {
-                                "id": row.id,
+                                "id": row.id ? row.id : 0,
                                 "whoiam": row.whoiam,
                                 "username": row.username,
                                 "email": row.email,
@@ -268,8 +268,19 @@ class AuthController {
         return response_promise;
     }
     
-    logoutUser(BrowserWindow) {
+    logoutUser(BrowserWindow) { 
         const CurrentWindow = BrowserWindow.getFocusedWindow();
+        
+        fs.unlink(`${this.current_directory}/config/database/dump/eab-session.json`, (err) => {
+            if(err && err.code == 'ENOENT') { 
+                console.info("File doesn't exist, won't remove it.");
+            } else if (err) { 
+                console.error("Error occurred while trying to remove file");
+            } else {
+                console.info(`User Session Cleared. User got logged out!`);
+            }
+        });
+
         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
     }
 }
