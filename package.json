@@ -30,9 +30,11 @@
     "dependencies": {
         "bcrypt": "^5.0.1",
         "dotenv": "^16.0.1",
+        "memfs": "^3.4.7",
         "mysql": "^2.18.1",
         "nodemon": "^2.0.19",
         "npm": "^8.14.0",
+        "phone": "^3.1.22",
         "sqlite3": "^5.0.9",
         "validator": "^13.7.0"
     }
