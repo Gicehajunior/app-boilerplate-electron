@@ -1,15 +1,39 @@
 const { remote, contextBridge, ipcRenderer } = require('electron');
 const path = require('path'); 
+const alert = require("alert");
 
 class Auth {
     constructor() { 
         this.current_directory = process.cwd();
         let datetime_now = new Date();
         this.datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');
+        this.windowLocation = window.location.href;
+    }
+
+    index() {
+        if (this.windowLocation.includes("reset-password")) {
+            alert(
+                `Please check on your email if you received a security code.\n\n If you filled in the correct email, it must have been sent successfully. If not, Please consult System Administrator for help!`
+            );
+        }
     }
 
     CreateUsersTable() {
-        ipcRenderer.invoke('createTable', 'users');
+        let sql_query = undefined; 
+        const table = "users";
+
+        if (process.env.DB_CONNECTION == "sqlite") {
+            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTERGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
+        }
+        else if (process.env.DB_CONNECTION == "mysql") {
+            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTERGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
+        }
+        
+        const table_object = JSON.stringify({
+            sql_query: sql_query,
+            table: table
+        });
+        ipcRenderer.invoke('createTable', table_object);
 
         ipcRenderer.on("create-table", (event, response) => {
             console.log(response);
@@ -27,6 +51,11 @@ class Auth {
 
         const email = document.getElementById("email");
         const password = document.getElementById("password");
+
+        const forgot_password = document.querySelector(".forgot-password");
+        const reset_password = document.querySelector(".reset-password");
+
+        const request_security_code_btns = document.querySelectorAll(".request-security-code-btn");
 
         if (document.body.contains(signup_user_form)) {
             register_btn.addEventListener("click", (event) => {
@@ -122,6 +151,25 @@ class Auth {
                     }); 
                 } 
             });
+        }
+        else if (document.body.contains(forgot_password)) {
+            request_security_code_btns.forEach(request_security_code_btn => {
+                request_security_code_btn.addEventListener('click', () => { 
+                    if (email.value == '') {
+                        alert(`Please fill in your email to receive a security code!`, "Notification"); 
+                    }
+                    else {
+                        ipcRenderer.invoke("/forgot-password", email.value);
+
+                        ipcRenderer.on("forgot-password-response", (event, response) => {
+                            console.log(response);
+                        });
+                    }
+                });
+            });
+        }
+        else if (document.body.contains(reset_password)) {
+
         }
     }
 

@@ -3,6 +3,8 @@ const EmailValidator = require('validator');
 const path = require('path');
 const {phone} = require('phone');
 const fs = require("fs");
+const Mailer = require("../../../config/services/MailerService");
+const alert = require("alert");
 
 class AuthController {
 
@@ -33,6 +35,21 @@ class AuthController {
 
     isObject(variable){
         return (!!variable) && (a.constructor === Object);
+    }
+
+    create_json_file(filepath, dataObject, encoding) { 
+        fs.writeFile(
+            filepath, 
+            JSON.stringify(dataObject),  
+            encoding,  
+            (err, data) => {
+                if (err){
+                    console.log(err);
+                } else {
+                    console.log("session successfully saved!");
+                }
+            }
+        );
     }
 
     saveUsers(stringifiedUsersInfo) {  
@@ -76,10 +93,10 @@ class AuthController {
             const callbackFunc = (row) => { 
                 let stmt;
                 if (this.database_type == "sqlite") {
-                    stmt = this.db.prepare(`INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?)`);
+                    stmt = this.db.prepare(`INSERT INTO users VALUES (?, ?, ?, ?, ?, ?, ?, ?)`);
                 }
                 else if (this.database_type == "mysql") {
-                    stmt = `INSERT INTO users (whoiam, username, email, contact, password, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?)`;
+                    stmt = `INSERT INTO users (whoiam, username, email, contact, password, reset_pass_security_code, created_at, updated_at) VALUES(?, ?, ?, ?, ?, ?, ?, ?)`;
                 }
                 const saltRounds = 10; 
                 let exists = [];
@@ -112,7 +129,7 @@ class AuthController {
                                 }
                                 else {
                                     if (this.database_type == "sqlite") {
-                                        stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, usersInfo.created_at, usersInfo.updated_at);
+                                        stmt.run(usersInfo.whoiam, usersInfo.username, usersInfo.email, usersInfo.contact, hash, 0, usersInfo.created_at, usersInfo.updated_at);
                             
                                         if (stmt.finalize()) {
                                             resolve(`Registration successfull!`);
@@ -207,21 +224,12 @@ class AuthController {
                                 "contact": row.contact,
                                 "created_at": row.created_at,
                                 "updated_at": row.updated_at
-                            }; 
-
-                            const fs = require('fs');
+                            };  
                             
-                            fs.writeFile(
+                            this.create_json_file(
                                 `${this.current_directory}/config/database/dump/eab-session.json`, 
-                                JSON.stringify(sessionObject),  
-                                'utf8',  
-                                (err, data) => {
-                                    if (err){
-                                        console.log(err);
-                                    } else {
-                                        console.log("session successfully saved!");
-                                    }
-                                }
+                                sessionObject,
+                                'utf8'
                             );
 
                             resolve(`password matches`);
@@ -243,12 +251,60 @@ class AuthController {
         return response_promise;
     }
 
-    createTable(table) { 
+    forgotPassword(BrowserWindow, email) {
+        this.create_json_file(
+            `${this.current_directory}/config/database/dump/reset-pass-session.json`, 
+            {"email": email},
+            'utf8'
+        );
+
+        const MailerService = new Mailer();
+
+        const security_code = Math.floor(100000 + Math.random() * 900000);
+        const recipients = [email];
+        const subject = "Reset Password Security Code"; 
+        const html_message_formart= `
+            <body>
+                <p style="text-align: center">Your Security Code is:</p>
+                <br>
+                <h3 style="text-align: center">${security_code}</h3>
+                <br>
+                <br> 
+                <p>
+                    Please keep your security code secure. However, 
+                    <strong>Note: The security code expires within one hour.</strong>
+                </p>
+            </body>
+        `;
+        const text_message_formart = undefined;
+
+        const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
+
+        const CurrentWindow = BrowserWindow.getFocusedWindow();
+
+        // let response = undefined;
+        if (send_email_response_promise == false) {  
+            CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+        }
+        else {
+            try { 
+                send_email_response_promise.then(send_email_response => {   
+                    if (send_email_response.response.includes("OK")) {
+                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                    }
+                }); 
+            } catch (error) { 
+                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+            } 
+        } 
+    }
+
+    createTable(sql_query, table) { 
         const response_promise = new Promise(resolve => {
             if (this.database_type == "sqlite") {
                 try { 
                     this.db.serialize(() => {
-                        this.db.run(`CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`);
+                        this.db.run(sql_query);
                         
                         resolve(`${table} table creation success`);
                     });  
@@ -257,8 +313,7 @@ class AuthController {
                 } 
             }
             else if (this.database_type == "mysql") { 
-                const sql = `CREATE TABLE IF NOT EXISTS ${table} (id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
-                this.db.query(sql, (err, result) => {
+                this.db.query(sql_query, (err, result) => {
                     if (err) {
                         console.log(err); 
                         resolve(`${table} table creation failed`);
