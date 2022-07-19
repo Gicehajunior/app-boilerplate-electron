@@ -3,6 +3,8 @@ const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config();
 
+const electronReload = require('electron-reload')
+
 const Database = require("./config/database/database");
 
 const DB = new Database(
@@ -31,7 +33,12 @@ const createWindow = () => {
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
+  
+  electronReload(__dirname, {
+    electron: path.join(__dirname, 'node_modules', '.bin', 'electron')
+  });
 }
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
