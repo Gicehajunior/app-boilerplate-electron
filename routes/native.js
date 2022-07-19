@@ -1,5 +1,6 @@
 const path = require('path');
 const AuthController = require("../app/https/auth/AuthController");
+const current_directory = process.cwd();
 
 /**
  * PUT your routes here, 
@@ -11,6 +12,10 @@ const AuthController = require("../app/https/auth/AuthController");
  */
 const Routes = (BrowserWindow, ipcMain, DbConn) => {  
     const Auth = new AuthController(DbConn);
+    
+    ipcMain.on('/dashboard', (event, route) => {   
+        Auth.index(BrowserWindow, route); 
+    });
      
     ipcMain.handle('createTable', (event, table) => {
         const response = Auth.createTable(table); 

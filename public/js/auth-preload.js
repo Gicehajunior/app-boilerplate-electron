@@ -104,7 +104,7 @@ class Auth {
                             users_message.style.color = "green";
 
                             setTimeout(() => {
-                                window.location.pathname = path.join(__dirname, '../../resources/views/dashboard.html');
+                                ipcRenderer.send("/dashboard", "dashboard");
                             }, 2000);
                         }
                         else if (response.includes("Invalid email")) {
