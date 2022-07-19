@@ -1,7 +1,7 @@
 const { remote, contextBridge, ipcRenderer } = require('electron');
 const path = require('path'); 
 const AppUserSession = require("../../config/services/sessionService");
-
+const alert = require("alert"); 
 class Dashboard {
     constructor() {
         this.current_directory = process.cwd();
@@ -15,11 +15,18 @@ class Dashboard {
 
         const UsernameDomElements = [
             document.querySelector(".username-in-session")
-        ];
+        ]; 
 
         UsernameDomElements.forEach(UsernameDomElement => {
             if (document.body.contains(UsernameDomElement)) {
                 UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${session.username}`;
+                
+                setTimeout(() => {
+                    alert(
+                        `\nHello ${session.username}. Welcome to back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`,
+                        "Notification"
+                    );
+                }, 1000);
             }
         });
     }
