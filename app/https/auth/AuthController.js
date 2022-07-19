@@ -20,6 +20,11 @@ class AuthController {
         this.updated_at = datetime_now; 
     }
 
+    index(BrowserWindow, route) {
+        const CurrentWindow = BrowserWindow.getFocusedWindow();
+        CurrentWindow.loadFile(`${this.current_directory}/resources/views/${route}.html`);
+    }
+
     validatePhone(phonenumber) {
         const response = phone(phonenumber, {country: `${this.country}`}); 
         
@@ -268,9 +273,9 @@ class AuthController {
         return response_promise;
     }
     
-    logoutUser(BrowserWindow) { 
+    logoutUser(BrowserWindow) {  
         const CurrentWindow = BrowserWindow.getFocusedWindow();
-        
+
         fs.unlink(`${this.current_directory}/config/database/dump/eab-session.json`, (err) => {
             if(err && err.code == 'ENOENT') { 
                 console.info("File doesn't exist, won't remove it.");
