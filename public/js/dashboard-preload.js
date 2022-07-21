@@ -1,29 +1,29 @@
 const { remote, contextBridge, ipcRenderer } = require('electron');
 const path = require('path'); 
-const AppUserSession = require("../../config/services/sessionService");
+const AppUserSession = require("../../config/services/SessionService");
 const alert = require("alert"); 
 class Dashboard {
     constructor() {
         this.current_directory = process.cwd();
         let datetime_now = new Date();
         this.datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');  
+
+        this.sessionObject = new AppUserSession(); 
+        this.session = this.sessionObject.session();
     }
 
-    index() { 
-        const sessionObject = new AppUserSession();
-        const session = sessionObject.session(); 
-
+    index() {    
         const UsernameDomElements = [
             document.querySelector(".username-in-session")
         ]; 
 
         UsernameDomElements.forEach(UsernameDomElement => {
             if (document.body.contains(UsernameDomElement)) {
-                UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${session.username}`;
+                UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${this.session['username']}`;
                 
                 setTimeout(() => {
                     alert(
-                        `\nHello ${session.username}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`,
+                        `\nHello ${this.session['username']}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`,
                         "Notification"
                     );
                 }, 1000);

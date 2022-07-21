@@ -181,7 +181,7 @@ class Auth {
                             "password": password.value,
                             "confirm_password": confirm_password.value
                         });
-                        console.log(reset_password_post_object);
+                        
                         ipcRenderer.send("/reset-password", reset_password_post_object);
 
                         ipcRenderer.on("reset-password-response", (event, response) => { 
