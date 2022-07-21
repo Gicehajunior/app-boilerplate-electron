@@ -12,8 +12,12 @@ const current_directory = process.cwd();
  */
 const Routes = (BrowserWindow, ipcMain, DbConn) => {  
     const Auth = new AuthController(DbConn);
-    
-    ipcMain.on('/dashboard', (event, route) => {   
+
+    ipcMain.on("/login", (event, route) => {   
+        Auth.index(BrowserWindow, route); 
+    });
+
+    ipcMain.on("/dashboard", (event, route) => {   
         Auth.index(BrowserWindow, route); 
     });
      
@@ -34,6 +38,13 @@ const Routes = (BrowserWindow, ipcMain, DbConn) => {
 
     ipcMain.handle('/forgot-password', (event, email) => {
         Auth.forgotPassword(BrowserWindow, email);   
+    });
+
+    ipcMain.on('/reset-password', (event, post_object) => { 
+        const response = Auth.ResetPassword(post_object);  
+        response.then(value => {  
+            event.sender.send("reset-password-response", `${value}`);
+        });
     });
 
     ipcMain.handle('loginUser', (event, usersInfo) => {   

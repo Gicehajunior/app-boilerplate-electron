@@ -1,4 +1,5 @@
 .env
+test
 node_modules/
 public/assets/bootstrap
 public/assets/jquery

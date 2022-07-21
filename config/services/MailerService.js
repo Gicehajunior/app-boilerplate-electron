@@ -40,7 +40,7 @@ class Mailer {
                 subject: subject, // Subject line
                 text: text_message_formart, // plain text body
                 html: html_message_formart, // html body
-                attachments: [{}]
+                attachments: undefined
             }); 
 
             response = response_promise;  

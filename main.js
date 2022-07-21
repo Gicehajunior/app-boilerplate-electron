@@ -29,7 +29,7 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'resources/auth/login.html'));
-  mainWindow.setMenu(null);
+  // mainWindow.setMenu(null);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();

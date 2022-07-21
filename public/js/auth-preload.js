@@ -23,10 +23,10 @@ class Auth {
         const table = "users";
 
         if (process.env.DB_CONNECTION == "sqlite") {
-            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTERGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
+            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTEGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
         }
         else if (process.env.DB_CONNECTION == "mysql") {
-            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTERGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
+            sql_query = `CREATE TABLE IF NOT EXISTS ${table} (id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT, whoiam INTEGER NOT NULL, username VARCHAR(15) NOT NULL, email VARCHAR(50) NULL, contact VARCHAR(13) NULL, password LONGTEXT NOT NULL, reset_pass_security_code INTEGER NULL, created_at DATETIME NULL, updated_at DATETIME NULL)`;
         }
         
         const table_object = JSON.stringify({
@@ -56,6 +56,7 @@ class Auth {
         const reset_password = document.querySelector(".reset-password");
 
         const request_security_code_btns = document.querySelectorAll(".request-security-code-btn");
+        const reset_password_btns = document.querySelectorAll(".reset-password-btn");
 
         if (document.body.contains(signup_user_form)) {
             register_btn.addEventListener("click", (event) => {
@@ -63,10 +64,10 @@ class Auth {
                 const username = document.getElementById("username");
                 const tel = document.getElementById("tel"); 
 
-                if (username.value == '' ||
-                    email.value == '' ||
-                    tel.value == '' ||
-                    password.value == ''
+                if (username.value.length == 0 ||
+                    email.value.length == 0 ||
+                    tel.value.length == 0 ||
+                    password.value.length == 0
                 ) {
                     users_message.innerHTML = `<small>Please fill in all fields to proceed!</small>`;
                     users_message.style.color = "red";
@@ -78,6 +79,7 @@ class Auth {
                         "email": email.value, 
                         "contact": tel.value, 
                         "password": password.value, 
+                        "reset_pass_security_code": 0,
                         "created_at": "", 
                         "updated_at": ""
                     };
@@ -113,8 +115,8 @@ class Auth {
             login_user_btn.addEventListener("click", (event) => {
                 event.preventDefault();
 
-                if (email.value == '' ||
-                    password.value == ''
+                if (email.value.length == 0 ||
+                    password.value.length == 0
                 ) { 
                     users_message.innerHTML = `<small>Please fill in all fields to login!</small>`;
                     users_message.style.color = "red";
@@ -133,7 +135,7 @@ class Auth {
                             users_message.style.color = "green";
 
                             setTimeout(() => {
-                                ipcRenderer.send("/dashboard", "dashboard");
+                                ipcRenderer.send("/dashboard", "views/dashboard");
                             }, 2000);
                         }
                         else if (response.includes("Invalid email")) {
@@ -155,21 +157,81 @@ class Auth {
         else if (document.body.contains(forgot_password)) {
             request_security_code_btns.forEach(request_security_code_btn => {
                 request_security_code_btn.addEventListener('click', () => { 
-                    if (email.value == '') {
+                    if (email.value.length == 0) {
                         alert(`Please fill in your email to receive a security code!`, "Notification"); 
                     }
                     else {
                         ipcRenderer.invoke("/forgot-password", email.value);
-
-                        ipcRenderer.on("forgot-password-response", (event, response) => {
-                            console.log(response);
-                        });
                     }
                 });
             });
         }
         else if (document.body.contains(reset_password)) {
+            reset_password_btns.forEach(reset_password_btn => {
+                reset_password_btn.addEventListener('click', () => { 
+                    const security_code = document.getElementById("security-code"); 
+                    const confirm_password = document.getElementById("confirm-password"); 
 
+                    if (security_code.value.length == 0 || password.value.length == 0 || confirm_password.value.length == 0) {
+                        alert(`Please fill in all the respective fields to proceed!`, "Notification"); 
+                    }
+                    else {
+                        const reset_password_post_object = JSON.stringify({
+                            "security_code": security_code.value,
+                            "password": password.value,
+                            "confirm_password": confirm_password.value
+                        });
+                        console.log(reset_password_post_object);
+                        ipcRenderer.send("/reset-password", reset_password_post_object);
+
+                        ipcRenderer.on("reset-password-response", (event, response) => { 
+                            if (response.includes("no user found")) { 
+                                alert(
+                                    `No user found with the input Email. Please register to proceed`
+                                );
+                            }
+                            else if (response.includes("Invalid email")) { 
+                                alert(
+                                    `Email is invalid. Please correct your email to proceed!`
+                                );
+                            }
+                            else if(response.includes("Unexpected error!")) {
+                                alert(
+                                    `Please try again or consult System Administrator for help!`
+                                );
+                            }
+                            else if(response.includes("Password mismatch")) {
+                                alert(
+                                    `Password mismatch. Please confirm your password!`
+                                );
+                            }
+                            else if(response.includes(`Please input a strong password!`)) {
+                                alert(
+                                    `Please enter a strong password to proceed!`
+                                );
+                            }
+                            else if(response.includes(`wrong security_code`)) {
+                                alert(
+                                    `You entered Incorrect Security Passcode. Please check the latest passcode and try again!`
+                                );
+                            } 
+                            else if(response.includes(`Reset Password failed!`)) {
+                                alert(
+                                    `Reseting your password failed. Please try again or consult System Administrator for help!`
+                                );
+                            }
+                            else if(response.includes(`Reset password success!`)) {
+                                alert(
+                                    `Password reset success. Please wait as login window is trying to load...`
+                                );
+                                setTimeout(() => {
+                                    ipcRenderer.send("/login", "auth/login");
+                                }, 2000);
+                            }
+                        });
+                    }
+                });
+            });
         }
     }
 
