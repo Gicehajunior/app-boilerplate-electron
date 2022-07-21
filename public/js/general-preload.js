@@ -17,7 +17,7 @@ class GeneralPreload {
         
         AppNameDomElements.forEach(AppNameDomElement => {
             if (document.body.contains(AppNameDomElement)) { 
-                AppNameDomElement.innerHTML = process.env.APP_NAME; 
+                AppNameDomElement.innerHTML = process.env.FOOTER_APP_NAME; 
             }
         });
 

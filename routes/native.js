@@ -1,6 +1,9 @@
 const path = require('path');
 const AuthController = require("../app/https/auth/AuthController");
 const current_directory = process.cwd();
+const AppUserSession = require("../config/services/SessionService");
+
+const sessionObject = new AppUserSession(); 
 
 /**
  * PUT your routes here, 
@@ -11,7 +14,7 @@ const current_directory = process.cwd();
  * @return response
  */
 const Routes = (BrowserWindow, ipcMain, DbConn) => {  
-    const Auth = new AuthController(DbConn);
+    const Auth = new AuthController(DbConn, sessionObject);
 
     ipcMain.on("/login", (event, route) => {   
         Auth.index(BrowserWindow, route); 

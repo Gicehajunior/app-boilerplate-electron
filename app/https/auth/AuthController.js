@@ -6,17 +6,14 @@ const fs = require("fs");
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
 const Util = require("../../../config/utils/Utils");
-const AppUserSession = require("../../../config/services/sessionService");
-const { connect } = require('http2');
 
 class AuthController {
 
-    constructor(db) {
+    constructor(db, session = {}) {
         this.db = db;
         this.AuthModel = new AuthModel(); 
-        const sessionObject = new AppUserSession();
-        this.session = sessionObject.session();
-
+        this.sessionObject = session;
+        
         this.current_directory = process.cwd();
         this.country = process.env.COUNTRY;
         this.database_type = process.env.DB_CONNECTION;
@@ -46,7 +43,7 @@ class AuthController {
         return (!!variable) && (a.constructor === Object);
     }
 
-    create_json_file(filepath, dataObject, encoding) { 
+    create_file(filepath, dataObject, encoding) { 
         fs.writeFile(
             filepath, 
             JSON.stringify(dataObject),  
@@ -155,7 +152,7 @@ class AuthController {
 
     loginUsers(stringifiedUsersInfo) {
         const usersInfo = JSON.parse(stringifiedUsersInfo);  
-        console.log(usersInfo);
+
         const getRow = (email, callback) => { 
             if (!EmailValidator.isEmail(usersInfo.email)) { 
                 callback("Invalid email");
@@ -203,8 +200,7 @@ class AuthController {
                             console.log(err);
                         } 
                         else if (result == true) { 
-                            // create session by creating a session object on memory:
-                            const sessionObject = {
+                            const object = {
                                 "id": row.id ? row.id : 0,
                                 "whoiam": row.whoiam,
                                 "username": row.username,
@@ -212,13 +208,9 @@ class AuthController {
                                 "contact": row.contact,
                                 "created_at": row.created_at,
                                 "updated_at": row.updated_at
-                            };  
-                            
-                            this.create_json_file(
-                                `${this.current_directory}/config/database/dump/eab-session.json`, 
-                                sessionObject,
-                                'utf8'
-                            );
+                            }; 
+
+                            this.sessionObject.save_session(JSON.stringify(object)); 
 
                             resolve(`password matches`);
                         }
@@ -240,6 +232,7 @@ class AuthController {
     }
 
     forgotPassword(BrowserWindow, email=[]) {
+        this.session = this.sessionObject.session();
 
         if (this.database_type == "sqlite") {
             this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
@@ -248,11 +241,7 @@ class AuthController {
                     console.log(err); 
                 }else{ 
                     if(rows[0] !== undefined) {
-                        this.create_json_file(
-                            `${this.current_directory}/config/database/dump/eab-session.json`, 
-                            {"id":rows[0].id ? rows[0].id : 0, "email": email},
-                            'utf8'
-                        );
+                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id ? rows[0].id : 0, "email": email}));
                     }
                 }
             });
@@ -266,11 +255,7 @@ class AuthController {
                 }
                 else { 
                     if(rows[0] !== undefined) {
-                        this.create_json_file(
-                            `${this.current_directory}/config/database/dump/eab-session.json`, 
-                            {"id":rows[0].id ? rows[0].id : 0, "email": email},
-                            'utf8'
-                        );
+                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id ? rows[0].id : 0, "email": email}));
                     }
                 }
             });  
@@ -315,7 +300,7 @@ class AuthController {
                             // save security code on database 
                             const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
                             this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                            DBUtil.update_resource_by_id(this.post_object, this.session.id).then(response => { 
+                            DBUtil.update_resource_by_id(this.post_object, this.sessionObject.session["id"]).then(response => { 
                                 if (response == true) {
                                     resolve(`security code saved!`);
                                     CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
@@ -336,14 +321,13 @@ class AuthController {
         return response_promise;  
     }
 
-    ResetPassword(post_object) {
-        let object = JSON.parse(post_object); 
-        console.log(object)
+    ResetPassword(post_object) { 
+        let object = JSON.parse(post_object);  
          
         const getRow = (callback) => { 
              
             if (this.database_type == "sqlite") {
-                this.db.all(`SELECT * FROM users WHERE id = ?`, [this.session.id], (err, rows) => {
+                this.db.all(`SELECT * FROM users WHERE id = ?`, [this.sessionObject.session["id"]], (err, rows) => {
                     if(err){
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err); 
@@ -353,7 +337,7 @@ class AuthController {
                 });
             }
             else if (this.database_type == "mysql") {
-                const sql = `SELECT * FROM users WHERE id = '${this.session.id}'`;
+                const sql = `SELECT * FROM users WHERE id = '${this.sessionObject.session["id"]}'`;
                 this.db.query(sql, (err, rows) => {
                     if (err) {
                         // Crone jobs will be implemented to handle this type of error!
@@ -399,8 +383,10 @@ class AuthController {
                                         "updated_at": this.updated_at
                                     });
 
+                                    this.sessionObject.save_session(this.post_object);
+
                                     const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
-                                    DBUtil.update_resource_by_id(this.post_object, this.session.id).then(response => { 
+                                    DBUtil.update_resource_by_id(this.post_object, this.sessionObject.session["id"]).then(response => { 
                                         if (response == true) {
                                             resolve(`Reset password success!`);    
                                         } 
@@ -443,8 +429,7 @@ class AuthController {
             }
             else if (this.database_type == "mysql") { 
                 this.db.query(sql_query, (err, result) => {
-                    if (err) {
-                        console.log(err); 
+                    if (err) {  
                         resolve(`${table} table creation failed`);
                     }
                     else {
@@ -459,15 +444,11 @@ class AuthController {
     
     logoutUser(BrowserWindow) {  
         const CurrentWindow = BrowserWindow.getFocusedWindow();
-
-        fs.unlink(`${this.current_directory}/config/database/dump/eab-session.json`, (err) => {
-            if(err && err.code == 'ENOENT') { 
-                console.info("File doesn't exist, won't remove it.");
-            } else if (err) { 
-                console.error("Error occurred while trying to remove file");
-            } else {
-                console.info(`User Session Cleared. User got logged out!`);
-            }
+        
+        this.sessionObject.delete_session().then((response) => {
+            console.log(response);
+        }).catch(error => {
+            console.log(error);
         });
 
         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
