@@ -1,7 +1,8 @@
 .env
+test
 node_modules/
 public/assets/bootstrap
 public/assets/jquery
-config/database/dump/eab-session.json
+config/database/dump/*
 
 

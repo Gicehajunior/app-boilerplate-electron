@@ -23,7 +23,7 @@ class Dashboard {
                 
                 setTimeout(() => {
                     alert(
-                        `\nHello ${session.username}. Welcome to back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`,
+                        `\nHello ${session.username}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`,
                         "Notification"
                     );
                 }, 1000);

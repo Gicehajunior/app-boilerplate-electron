@@ -14,8 +14,11 @@ window.addEventListener('DOMContentLoaded', () => {
     Authentication.logoutUser();
 
     if (location_end_string_name.includes("login.html") ||
-        location_end_string_name.includes("signup.html")) 
+        location_end_string_name.includes("signup.html") ||
+        location_end_string_name.includes("forgot-password.html") ||
+        location_end_string_name.includes("reset-password.html")) 
     { 
+        Authentication.index();
         Authentication.CreateUsersTable();
         Authentication.AuthUsers();  
     } 

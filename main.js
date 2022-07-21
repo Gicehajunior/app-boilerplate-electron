@@ -3,8 +3,6 @@ const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config();
 
-const electronReload = require('electron-reload')
-
 const Database = require("./config/database/database");
 
 const DB = new Database(
@@ -22,6 +20,8 @@ const createWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    minWidth:700,
+    minHeight:600,
     webPreferences: {
       preload: path.join(__dirname, 'public/js/preload.js')
     }, 
@@ -29,14 +29,10 @@ const createWindow = () => {
 
   // and load the index.html of the app.
   mainWindow.loadFile(path.join(__dirname, 'resources/auth/login.html'));
-  mainWindow.setMenu(null);
+  // mainWindow.setMenu(null);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools();
-  
-  electronReload(__dirname, {
-    electron: path.join(__dirname, 'node_modules', '.bin', 'electron')
-  });
 }
 
 
