@@ -159,7 +159,7 @@ class AuthController {
             }
             else {
                 if (this.database_type == "sqlite") {
-                    this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
+                    this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
                         if(err){
                             // Crone jobs will be implemented to handle this type of error!
                             console.log(err); 
@@ -184,7 +184,7 @@ class AuthController {
         }
 
         const response_promise = new Promise(resolve => {
-            const callbackFunc = (row) => { 
+            const callbackFunc = (row) => {  
                 if (row == undefined) {
                     resolve(`no user found`);
                 }  
@@ -199,9 +199,9 @@ class AuthController {
                         if (err) {
                             console.log(err);
                         } 
-                        else if (result == true) { 
+                        else if (result == true) {   
                             const object = {
-                                "id": row.id ? row.id : 0,
+                                "id": row.id ? row.id : row.rowid ? row.rowid : 0,
                                 "whoiam": row.whoiam,
                                 "username": row.username,
                                 "email": row.email,
@@ -231,17 +231,15 @@ class AuthController {
         return response_promise;
     }
 
-    forgotPassword(BrowserWindow, email=[]) {
-        this.session = this.sessionObject.session();
-
+    forgotPassword(BrowserWindow, email=[]) { 
         if (this.database_type == "sqlite") {
-            this.db.all(`SELECT * FROM users WHERE email = ?`, [email], (err, rows) => {
+            this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
                 if(err){
                     // Crone jobs will be implemented to handle this type of error!
                     console.log(err); 
                 }else{ 
                     if(rows[0] !== undefined) {
-                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id ? rows[0].id : 0, "email": email}));
+                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
                     }
                 }
             });
@@ -255,7 +253,7 @@ class AuthController {
                 }
                 else { 
                     if(rows[0] !== undefined) {
-                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id ? rows[0].id : 0, "email": email}));
+                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
                     }
                 }
             });  
@@ -327,7 +325,7 @@ class AuthController {
         const getRow = (callback) => { 
              
             if (this.database_type == "sqlite") {
-                this.db.all(`SELECT * FROM users WHERE id = ?`, [this.sessionObject.session["id"]], (err, rows) => {
+                this.db.all(`SELECT rowid, * FROM users WHERE rowid = ?`, [this.sessionObject.session["id"]], (err, rows) => {
                     if(err){
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err); 
@@ -352,6 +350,7 @@ class AuthController {
 
         const reset_pass_response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
+                console.log(row.email) 
                 if (row == undefined) {
                     resolve(`no user found`);
                 }  
@@ -360,7 +359,7 @@ class AuthController {
                         resolve("Invalid email");
                     }
                 }
-                else if (row.email == this.session.email) { 
+                else if (row.email) { 
                     if (object.security_code == row.reset_pass_security_code) {  
                         const saltRounds = 10; 
 
