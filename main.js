@@ -3,7 +3,7 @@ const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config();
 
-app.commandLine.appendSwitch('force_high_performance_gpu');
+app.disableHardwareAcceleration();
 
 const Database = require("./config/database/database");
 
@@ -15,7 +15,6 @@ const DB = new Database(
   process.env.DB_USERNAME,
   process.env.DB_PASSWORD
 );
-
 
 const createWindow = () => {
   // Create the browser window.
