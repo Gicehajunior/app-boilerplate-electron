@@ -39,11 +39,11 @@ class Util {
                 const keys = Object.keys(object);
                 const values = Object.values(object); 
             
-                const inline_keys_list  = keys.toString();
-                const inline_values_list  = values.toString(); 
+                const inline_keys_list  = keys.toString();  
                 
                 if (this.database_type == "sqlite") {
-                    this.sql_statement = this.db.prepare(`INSERT INTO ${this.database_table} VALUES(${this.sql_prepare_stm_query_marks(keys)})`);
+                    this.sql_statement = `INSERT INTO ${this.database_table} VALUES(${this.sql_prepare_stm_query_marks(keys)})`;
+                    this.sql_statement = this.db.prepare(this.sql_statement)
                     this.sql_statement.run(values);
 
                     if (this.sql_statement.finalize()) {
@@ -79,8 +79,8 @@ class Util {
             try { 
                 let object = JSON.parse(post_object);
 
-                if (this.database_type == "sqlite") {
-                    this.sql_statement = `UPDATE ${this.database_table} SET ${this.inline_sql_where_stmt_list_string(object)} WHERE rowid = ?`;
+                if (this.database_type == "sqlite") { 
+                    this.sql_statement = this.db.prepare(`UPDATE ${this.database_table} SET ${this.inline_sql_where_stmt_list_string(object)} WHERE rowid = ?`);
                     this.sql_statement.run(id);
 
                     if (this.sql_statement.finalize()) {

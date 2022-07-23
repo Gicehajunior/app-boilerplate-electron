@@ -5,24 +5,25 @@ const {phone} = require('phone');
 const fs = require("fs");
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
-const Util = require("../../../config/utils/Utils");
+const Util = require("../../../config/utils/Utils"); 
 
 class AuthController {
 
     constructor(db, session = {}) {
         this.db = db;
         this.AuthModel = new AuthModel(); 
-        this.sessionObject = session;
+        this.sessionObject = session; 
+        this.session = this.sessionObject.session()
         
         this.current_directory = process.cwd();
         this.country = process.env.COUNTRY;
         this.database_type = process.env.DB_CONNECTION;
 
-        let datetime_now = new Date();
-        datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');
+        this.date = new Date();
+        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' ');
 
-        this.created_at = datetime_now;
-        this.updated_at = datetime_now; 
+        this.created_at = this.datetime_now;
+        this.updated_at = this.datetime_now; 
 
         this.post_object;
     }
@@ -231,7 +232,7 @@ class AuthController {
         return response_promise;
     }
 
-    forgotPassword(BrowserWindow, email=[]) { 
+    forgotPassword(BrowserWindow, email=[]) {  
         if (this.database_type == "sqlite") {
             this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
                 if(err){
@@ -298,7 +299,7 @@ class AuthController {
                             // save security code on database 
                             const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
                             this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                            DBUtil.update_resource_by_id(this.post_object, this.sessionObject.session["id"]).then(response => { 
+                            DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
                                 if (response == true) {
                                     resolve(`security code saved!`);
                                     CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
@@ -319,23 +320,23 @@ class AuthController {
         return response_promise;  
     }
 
-    ResetPassword(post_object) { 
+    ResetPassword(post_object) {    
         let object = JSON.parse(post_object);  
          
         const getRow = (callback) => { 
              
-            if (this.database_type == "sqlite") {
-                this.db.all(`SELECT rowid, * FROM users WHERE rowid = ?`, [this.sessionObject.session["id"]], (err, rows) => {
+            if (this.database_type == "sqlite") { 
+                this.db.all(`SELECT rowid, * FROM users WHERE rowid = ?`, [this.session["id"]], (err, rows) => {
                     if(err){
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err); 
-                    }else{
+                    }else{  
                         callback(rows[0]);
                     }
                 });
             }
             else if (this.database_type == "mysql") {
-                const sql = `SELECT * FROM users WHERE id = '${this.sessionObject.session["id"]}'`;
+                const sql = `SELECT * FROM users WHERE id = '${this.session["id"]}'`;
                 this.db.query(sql, (err, rows) => {
                     if (err) {
                         // Crone jobs will be implemented to handle this type of error!
@@ -350,7 +351,7 @@ class AuthController {
 
         const reset_pass_response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
-                console.log(row.email) 
+                
                 if (row == undefined) {
                     resolve(`no user found`);
                 }  
@@ -359,7 +360,7 @@ class AuthController {
                         resolve("Invalid email");
                     }
                 }
-                else if (row.email) { 
+                else if (row.email == this.session["email"]) {  
                     if (object.security_code == row.reset_pass_security_code) {  
                         const saltRounds = 10; 
 
@@ -380,12 +381,10 @@ class AuthController {
                                         "password": hash,
                                         "reset_pass_security_code": 0,
                                         "updated_at": this.updated_at
-                                    });
-
-                                    this.sessionObject.save_session(this.post_object);
+                                    }); 
 
                                     const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
-                                    DBUtil.update_resource_by_id(this.post_object, this.sessionObject.session["id"]).then(response => { 
+                                    DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
                                         if (response == true) {
                                             resolve(`Reset password success!`);    
                                         } 

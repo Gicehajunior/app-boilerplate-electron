@@ -8,7 +8,7 @@ class GeneralPreload {
     constructor() {
         this.current_directory = process.cwd();
         this.date = new Date();
-        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' ');  
+        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' '); 
     }
 
     index() { 

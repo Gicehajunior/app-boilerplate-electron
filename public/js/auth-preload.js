@@ -5,8 +5,9 @@ const alert = require("alert");
 class Auth {
     constructor() { 
         this.current_directory = process.cwd();
-        let datetime_now = new Date();
-        this.datetime_now = datetime_now.toISOString().slice(0, 19).replace('T', ' ');
+        this.date = new Date();
+        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' ');
+
         this.windowLocation = window.location.href;
     }
 

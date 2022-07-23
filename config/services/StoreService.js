@@ -42,8 +42,7 @@ class Store {
     
     // This will just return the property on the `data` object
     get(key = undefined) {
-        let data = key ? this.data[key] : this.data;
-        console.log(data);
+        let data = key ? this.data[key] : this.data; 
 
         return data;
     }

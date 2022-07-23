@@ -3,6 +3,8 @@ const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 require('dotenv').config();
 
+app.commandLine.appendSwitch('force_high_performance_gpu');
+
 const Database = require("./config/database/database");
 
 const DB = new Database(
@@ -32,7 +34,7 @@ const createWindow = () => {
   mainWindow.setMenu(null);
 
   // Open the DevTools.
-  if (process.env.DEBUG.toLocaleLowerCase == true) {
+  if (process.env.DEBUG.toLocaleLowerCase() == 'true') {
     mainWindow.webContents.openDevTools();
   }
 }
