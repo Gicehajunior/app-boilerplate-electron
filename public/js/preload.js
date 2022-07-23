@@ -9,9 +9,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const location_end_string_name = window.location.href; 
     const GeneralPreloader = new GeneralPreload();
     const Authentication = new Auth();
+    const DashboardCall = new Dashboard();
     
-    GeneralPreloader.index();
-    Authentication.logoutUser();
+    GeneralPreloader.index(); 
 
     if (location_end_string_name.includes("login.html") ||
         location_end_string_name.includes("signup.html") ||
@@ -22,11 +22,11 @@ window.addEventListener('DOMContentLoaded', () => {
         Authentication.CreateUsersTable();
         Authentication.AuthUsers();  
     } 
-    else if (location_end_string_name.includes("dashboard.html")) {
-        const DashboardCall = new Dashboard();
+    else if (location_end_string_name.includes("dashboard.html")) { 
         DashboardCall.index(); 
     } 
-       
+    
+    Authentication.logoutUser();
 }); 
 
 
