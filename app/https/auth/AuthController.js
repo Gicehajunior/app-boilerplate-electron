@@ -299,9 +299,7 @@ class AuthController {
                             // save security code on database 
                             const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
                             this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                            console.log(this.session["id"])
                             DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
-                                console.log(response) 
                                 if (response == true) {
                                     resolve(`security code saved!`);
                                     CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
