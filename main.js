@@ -33,7 +33,7 @@ const createWindow = () => {
   mainWindow.setMenu(null);
 
   // Open the DevTools.
-  if (process.env.DEBUG.toLocaleLowerCase() == 'true') {
+  if (process.env.DEBUG.toLowerCase() == 'true') {
     mainWindow.webContents.openDevTools();
   }
 }
