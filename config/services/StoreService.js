@@ -4,16 +4,23 @@ const fs = require('fs');
 
 class Store {
     constructor(opts) {
+        this.opts = opts;
         // Renderer process has to get `app` module via `remote`, 
         // whereas the main process can get it directly
         // app.getPath('userData') will return a string of the user's app data directory path.
-        const userDataPath = this.getAppBasePath(); 
+        this.userDataPath = this.getAppBasePath(); 
+        this.current_working_dir = process.cwd();
         
         // We'll use the `configName` property to set the file name and 
         // path.join to bring it all together as a string
-        this.path = path.join(userDataPath, `${opts.folder ? opts.folder + '/' : ''}${opts.configName}.json`);
+        this.path = path.join(this.userDataPath, `${this.opts.folder ? this.opts.folder + '/' : ''}${this.opts.configName}.json`);
         
-        this.data = this.parseDataFile(this.path, opts.defaults);
+        if (!fs.existsSync(`${this.userDataPath}${this.opts.folder ? this.opts.folder + '/' : ''}`)) {
+            this.create_dir_if_not_exists(`${this.current_working_dir}/public`, this.opts.folder);
+            this.path = path.join(`${this.current_working_dir}/public`, `${this.opts.folder ? this.opts.folder + '/' : ''}${this.opts.configName}.json`);
+        } 
+
+        this.data = this.parseDataFile(this.path, this.opts.defaults);
     }
 
     getAppBasePath = () => {
@@ -39,6 +46,15 @@ class Store {
     get_data_path () {
         return this.path;
     }
+
+    create_dir_if_not_exists(root_path, path_getting_created) {
+        fs.mkdir(path.join(root_path, `${path_getting_created}`),
+            { recursive: true }, (err) => {
+            if (err) {
+                console.error(err);
+            } 
+        });
+    }
     
     // This will just return the property on the `data` object
     get(key = undefined) {
@@ -58,12 +74,18 @@ class Store {
             this.data[element[0]] = element[1];  
         });
 
-        // Wait, I thought using the node.js' synchronous APIs was bad form?
-        // We're not writing a server so there's not nearly the same IO demand on the process
-        // Also if we used an async API and our app was quit before the asynchronous 
-        // write had a chance to complete,
-        // we might lose that data. Note that in a real app, we would try/catch this.
-        let write = fs.writeFileSync(this.path, JSON.stringify(this.data));
+        let write;
+
+        try {
+            // Wait, I thought using the node.js' synchronous APIs was bad form?
+            // We're not writing a server so there's not nearly the same IO demand on the process
+            // Also if we used an async API and our app was quit before the asynchronous 
+            // write had a chance to complete,
+            // we might lose that data. Note that in a real app, we would try/catch this.
+            write = fs.writeFileSync(this.path, JSON.stringify(this.data));
+        } catch (error) {
+            write = error;
+        }
 
         return write;
     }
@@ -82,6 +104,6 @@ class Store {
             return defaults;
         }
     }
-    } 
+} 
 
-    module.exports = Store;
+module.exports = Store;

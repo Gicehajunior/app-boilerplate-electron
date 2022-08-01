@@ -5,4 +5,4 @@ public/assets/bootstrap
 public/assets/jquery
 config/database/dump/*
 public/logs/electron_debug.log
-
+public/Session Storage
