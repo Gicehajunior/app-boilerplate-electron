@@ -1,31 +1,21 @@
+const path = require('path');
+const fs = require("fs");
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
-const path = require('path');
 const {phone} = require('phone');
-const fs = require("fs");
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
 const Util = require("../../../config/utils/Utils"); 
 
-class AuthController {
+class AuthController extends AuthModel{
 
     constructor(db, session = {}) {
-        this.db = db;
-        this.AuthModel = new AuthModel(); 
+        super();
+        this.db = db; 
         this.sessionObject = session; 
-        this.session = this.sessionObject.session()
-        
-        this.current_directory = process.cwd();
-        this.country = process.env.COUNTRY;
-        this.database_type = process.env.DB_CONNECTION;
+        this.session = this.sessionObject.session(); 
 
-        this.date = new Date();
-        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' ');
-
-        this.created_at = this.datetime_now;
-        this.updated_at = this.datetime_now; 
-
-        this.post_object;
+        this.post_object = undefined;
     }
 
     index(BrowserWindow, route) {
@@ -129,7 +119,7 @@ class AuthController {
                                 }
                                 else {
                                     usersInfo.password = hash;
-                                    const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
+                                    const DBUtil = new Util(this.db, this.database_table()[0]);
                                     DBUtil.save_resource(JSON.stringify(usersInfo)).then(response => { 
                                         if (response == true) {
                                             resolve(`Registration successfull!`);
@@ -232,89 +222,96 @@ class AuthController {
         return response_promise;
     }
 
-    forgotPassword(BrowserWindow, email=[]) {  
-        if (this.database_type == "sqlite") {
-            this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
-                if(err){
-                    // Crone jobs will be implemented to handle this type of error!
-                    console.log(err); 
-                }else{ 
-                    if(rows[0] !== undefined) {
-                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
-                    }
-                }
-            });
-        }
-        else if (this.database_type == "mysql") {
-            const sql = `SELECT * FROM users WHERE email = '${email}'`;
-            this.db.query(sql, (err, rows) => {
-                if (err) {
-                    // Crone jobs will be implemented to handle this type of error!
-                    console.log(err); 
-                }
-                else { 
-                    if(rows[0] !== undefined) {
-                        this.sessionObject.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
-                    }
-                }
-            });  
-        }
-        
-        const MailerService = new Mailer();
-
-        const security_code = Math.floor(100000 + Math.random() * 900000);
-        const recipients = email
-        
-        const subject = "Reset Password Security Code"; 
-        const html_message_formart= `
-            <body style="text-align: center">
-                <p>Your Security Code is:</p>
-                <br>
-                <h3>${security_code}</h3>
-                <br>
-                <br> 
-                <p>
-                    Please keep your security code secure. However, 
-                    <strong>Note: The security code expires within one hour.</strong>
-                </p>
-            </body>
-        `;
-        const text_message_formart = undefined;
-
-        const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
-
-        const CurrentWindow = BrowserWindow.getFocusedWindow();
-
+    forgotPassword(BrowserWindow, email=[]) { 
         const response_promise = new Promise(resolve => {
-            if (send_email_response_promise == false) {  
-                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+            if (email.length == 0) {
+                resolve("empty email");
             }
-            else {
-                try { 
-                    send_email_response_promise.then(send_email_response => {  
-                        if (send_email_response == false) {
-                            CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
-                        }
-                        else if (send_email_response.response.includes("OK")) {
-                            // save security code on database 
-                            const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
-                            this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                            DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
-                                if (response == true) {
-                                    resolve(`security code saved!`);
-                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                } 
-                                else {
-                                    resolve(`security code saving failed!`);
-                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                } 
-                            });   
-                        }
-                    }); 
-                } catch (error) { 
-                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                } 
+            else if (!EmailValidator.isEmail(email)) { 
+                resolve("Invalid email");
             } 
+            else {
+                if (this.database_type == "sqlite") {
+                    this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
+                        if(err){
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err); 
+                        }else{ 
+                            if(rows[0] !== undefined) {
+                                this.sessionObject.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
+                            }
+                        }
+                    });
+                }
+                else if (this.database_type == "mysql") {
+                    const sql = `SELECT * FROM users WHERE email = '${email}'`;
+                    this.db.query(sql, (err, rows) => {
+                        if (err) {
+                            // Crone jobs will be implemented to handle this type of error!
+                            console.log(err); 
+                        }
+                        else { 
+                            if(rows[0] !== undefined) {
+                                this.sessionObject.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
+                            }
+                        }
+                    });  
+                }
+                
+                const MailerService = new Mailer();
+
+                const security_code = Math.floor(100000 + Math.random() * 900000);
+                const recipients = email
+                
+                const subject = "Reset Password Security Code"; 
+                const html_message_formart= `
+                    <body style="text-align: center">
+                        <p>Your Security Code is:</p>
+                        <br>
+                        <h3>${security_code}</h3>
+                        <br>
+                        <br> 
+                        <p>
+                            Please keep your security code secure. However, 
+                            <strong>Note: The security code expires within one hour.</strong>
+                        </p>
+                    </body>
+                `;
+                const text_message_formart = undefined;
+
+                const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
+
+                const CurrentWindow = BrowserWindow.getFocusedWindow(); 
+                if (send_email_response_promise == false) {  
+                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                }
+                else {
+                    try { 
+                        send_email_response_promise.then(send_email_response => {  
+                            if (send_email_response == false) {
+                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                            }
+                            else if (send_email_response.response.includes("OK")) {
+                                // save security code on database 
+                                const DBUtil = new Util(this.db,  this.database_table()[0]);
+                                this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
+                                DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
+                                    if (response == true) {
+                                        resolve(`security code saved!`);
+                                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                    } 
+                                    else {
+                                        resolve(`security code saving failed!`);
+                                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                    } 
+                                });   
+                            }
+                        }); 
+                    } catch (error) { 
+                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                    } 
+                } 
+            }
         });
 
         return response_promise;  
@@ -383,7 +380,7 @@ class AuthController {
                                         "updated_at": this.updated_at
                                     }); 
 
-                                    const DBUtil = new Util(this.db, this.AuthModel.database_table()[0]);
+                                    const DBUtil = new Util(this.db, this.database_table()[0]);
                                     DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
                                         if (response == true) {
                                             resolve(`Reset password success!`);    

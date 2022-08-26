@@ -1,6 +1,7 @@
 const path = require('path');
-const AuthController = require("../app/https/auth/AuthController");
 const current_directory = process.cwd();
+const AppModel = require("../app/models/AppModel");
+const AuthController = require("../app/https/auth/AuthController");
 const AppUserSession = require("../config/services/SessionService");
 
 const sessionObject = new AppUserSession(); 
@@ -16,9 +17,13 @@ const sessionObject = new AppUserSession();
 const Routes = (BrowserWindow, ipcMain, DbConn) => {  
     const Auth = new AuthController(DbConn, sessionObject);
 
+    ipcMain.on("/alertMessage", (event, MessageObject) => {   
+        AppModel.InitAlertModel(BrowserWindow, MessageObject); 
+    });
+    
     ipcMain.on("/login", (event, route) => {   
         Auth.index(BrowserWindow, route); 
-    });
+    }); 
 
     ipcMain.on("/dashboard", (event, route) => {   
         Auth.index(BrowserWindow, route); 
@@ -40,7 +45,10 @@ const Routes = (BrowserWindow, ipcMain, DbConn) => {
     });
 
     ipcMain.handle('/forgot-password', (event, email) => {
-        Auth.forgotPassword(BrowserWindow, email);   
+        const response = Auth.forgotPassword(BrowserWindow, email); 
+        response.then(value => {  
+            event.sender.send("forgot-password-response", `${value}`);
+        });  
     });
 
     ipcMain.on('/reset-password', (event, post_object) => { 

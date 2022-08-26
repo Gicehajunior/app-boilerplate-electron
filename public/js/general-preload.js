@@ -1,23 +1,19 @@
 
-const { remote, contextBridge, ipcRenderer } = require('electron');
-const path = require('path');  
-const alert = require("alert");
 require('dotenv').config();
- 
-class GeneralPreload {
+const MP = require('./MP');
+
+class GeneralPreload extends MP {
     constructor() {
-        this.current_directory = process.cwd();
-        this.date = new Date();
-        this.datetime_now = this.date.toISOString().slice(0, 19).replace('T', ' '); 
+        super();
     }
 
-    index() { 
+    index() {
         const DateDomElements = document.querySelectorAll(".dom-date");
         const AppNameDomElements = document.querySelectorAll(".app-name");
-        
+
         AppNameDomElements.forEach(AppNameDomElement => {
-            if (document.body.contains(AppNameDomElement)) { 
-                AppNameDomElement.innerHTML = process.env.FOOTER_APP_NAME; 
+            if (document.body.contains(AppNameDomElement)) {
+                AppNameDomElement.innerHTML = process.env.FOOTER_APP_NAME;
             }
         });
 
@@ -31,10 +27,3 @@ class GeneralPreload {
 }
 
 module.exports = GeneralPreload;
-
-
-
-
-
-
-

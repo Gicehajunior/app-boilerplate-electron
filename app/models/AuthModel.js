@@ -1,4 +1,5 @@
-class AuthModel {
+const AppModel = require("./AppModel");
+class AuthModel extends AppModel{
     
     database_table() {
         const table = [
@@ -7,18 +8,7 @@ class AuthModel {
 
         return table;
     }
-
-
-
-
-
-
-
-
-
-
-
-
+ 
 }
 
 module.exports = AuthModel;

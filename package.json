@@ -29,13 +29,11 @@
         "grunt-bower-task": "^0.6.2"
     },
     "dependencies": {
-        "alert": "^5.1.1",
         "bcrypt": "^5.0.1",
         "dotenv": "^16.0.1",
         "mysql": "^2.18.1",
         "nodemailer": "^6.7.7",
         "nodemon": "^2.0.19",
-        "npm": "^8.14.0",
         "phone": "^3.1.22",
         "sqlite3": "^5.0.9",
         "validator": "^13.7.0"
