@@ -1,5 +1,6 @@
 // Modules to control application life and create native browser window
-const { app, contextBridge, BrowserWindow, ipcMain } = require('electron');
+const electron = require("electron");
+const { app, contextBridge, BrowserWindow, ipcMain } = electron;
 const path = require('path');
 require('dotenv').config();
 
@@ -23,7 +24,7 @@ const createWindow = () => {
     height: 600,
     minWidth:700,
     minHeight:600,
-    webPreferences: {
+    webPreferences: {  
       preload: path.join(__dirname, 'public/js/preload.js')
     }, 
   }); 
@@ -35,7 +36,13 @@ const createWindow = () => {
   // Open the DevTools.
   if (process.env.DEBUG.toLocaleLowerCase() == 'true') {
     mainWindow.webContents.openDevTools();
-  }
+  } 
+
+  mainWindow.once("ready-to-show", () => { 
+    setTimeout(() => {
+      mainWindow.focus(); 
+    }, 2000);
+  });
 }
 
 

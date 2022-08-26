@@ -6,3 +6,4 @@ public/assets/jquery
 config/database/dump/*
 public/logs/electron_debug.log
 public/Session Storage
+app/Helpers
