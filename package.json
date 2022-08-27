@@ -6,7 +6,8 @@
     "scripts": {
         "preinstall": "node ./config/services/DatabaseService.js",
         "postinstall": "bower install",
-        "start": "electron . --no-sandbox --enable-logging=file --log-file=./public/logs/electron_debug.log"
+        
+        "start": "nodemon --watch . --exec electron . --no-sandbox --enable-logging=file --log-file=./public/logs/electron_debug.log"
     },
     "authors": [
         {
