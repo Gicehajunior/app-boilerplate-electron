@@ -296,15 +296,15 @@ class AuthController extends AuthModel{
                                 const DBUtil = new Util(this.db,  this.database_table()[0]);
                                 this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
                                 DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
-                                    if (response == true) {
-                                        resolve(`security code saved!`);
+                                    if (response == true) { 
                                         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
                                     } 
-                                    else {
-                                        resolve(`security code saving failed!`);
+                                    else { 
                                         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
                                     } 
-                                });   
+                                }).catch((error) => {
+                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                });
                             }
                         }); 
                     } catch (error) { 
@@ -388,7 +388,9 @@ class AuthController extends AuthModel{
                                         else {
                                             resolve(`Reset Password failed!`);
                                         } 
-                                    });    
+                                    }).catch((error) => {
+                                        resolve(`Reset Password failed!`);
+                                    });;    
                                 }
                             });
                         });

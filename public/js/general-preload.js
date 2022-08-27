@@ -1,5 +1,6 @@
 
 require('dotenv').config();
+const helper = require('../../app/Helpers/config');
 const MP = require('./MP');
 
 class GeneralPreload extends MP {
@@ -8,12 +9,19 @@ class GeneralPreload extends MP {
     }
 
     index() {
+        const buttons = document.querySelectorAll(".btn");
         const DateDomElements = document.querySelectorAll(".dom-date");
         const AppNameDomElements = document.querySelectorAll(".app-name");
 
+        buttons.forEach(button => {
+            button.addEventListener('click', event => {
+                button.innerHTML = helper.button_click_innerhtml_context;
+            });
+        });
+
         AppNameDomElements.forEach(AppNameDomElement => {
             if (document.body.contains(AppNameDomElement)) {
-                AppNameDomElement.innerHTML = process.env.FOOTER_APP_NAME;
+                AppNameDomElement.innerHTML = helper.footer_app_name;
             }
         });
 

@@ -1,5 +1,6 @@
 const electron = require('electron');
 const { ipcRenderer } = electron;
+const helper = require('../../app/Helpers/config');
 const MP = require('./MP');
 
 class Dashboard extends MP {
@@ -8,9 +9,7 @@ class Dashboard extends MP {
     }
 
     index() {
-        const UsernameDomElements = [
-            document.querySelector(".username-in-session")
-        ];
+        const UsernameDomElements =  document.querySelectorAll(".username-in-session");
 
         UsernameDomElements.forEach(UsernameDomElement => {
             if (document.body.contains(UsernameDomElement)) {

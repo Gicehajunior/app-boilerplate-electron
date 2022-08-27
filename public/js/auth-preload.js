@@ -1,5 +1,6 @@
 const electron = require('electron');
 const { BrowserWindow, ipcRenderer } = electron;
+const helper = require('../../app/Helpers/config');
 const MP = require('./MP');
 
 class Auth extends MP {
@@ -79,6 +80,7 @@ class Auth extends MP {
                 ) {
                     users_message.innerHTML = `<small>Please fill in all fields to proceed!</small>`;
                     users_message.style.color = "red";
+                    register_btn.innerHTML = helper.register_button_innerhtml_context;
                 }
                 else {
                     const usersInfo = {
@@ -115,6 +117,9 @@ class Auth extends MP {
                             users_message.innerHTML = `<small>Registration successfull. Go to login page to proceed!</small>`;
                             users_message.style.color = "green";
                         }
+                        if (!response.includes("Registration successfull!")) {
+                            register_btn.innerHTML = helper.register_button_innerhtml_context;
+                        } 
                     });
                 }
             });
@@ -128,6 +133,7 @@ class Auth extends MP {
                 ) {
                     users_message.innerHTML = `<small>Please fill in all fields to login!</small>`;
                     users_message.style.color = "red";
+                    login_user_btn.innerHTML = helper.login_button_innerhtml_context;
                 }
                 else {
                     const usersInfo = {
@@ -158,6 +164,11 @@ class Auth extends MP {
                             users_message.innerHTML = `<small>No user found with the input Email. Please register to proceed!</small>`;
                             users_message.style.color = "red";
                         }
+
+                        if (!response.includes("password matches")) {
+                            login_user_btn.innerHTML = helper.login_button_innerhtml_context;
+                        }
+                        
                     });
                 }
             });
@@ -171,6 +182,7 @@ class Auth extends MP {
                             title: "Notification",
                             message: `Please fill in your email to receive a security code!`
                         });
+                        request_security_code_btn.innerHTML = helper.forgot_password_button_innerhtml_context;
                     }
                     else {
                         ipcRenderer.invoke("/forgot-password", email.value);
@@ -190,6 +202,8 @@ class Auth extends MP {
                                     message: `Email is invalid. Please correct your email to proceed!`
                                 });
                             }
+
+                            request_security_code_btn.innerHTML = helper.forgot_password_button_innerhtml_context;
                         });
                     }
                 });
@@ -207,6 +221,7 @@ class Auth extends MP {
                             title: "Notification",
                             message: `Please fill in all the respective fields to proceed!`
                         });
+                        reset_password_btn.innerHTML = helper.reset_password_button_innerhtml_context;
                     }
                     else {
                         const reset_password_post_object = JSON.stringify({
@@ -270,6 +285,10 @@ class Auth extends MP {
                             else if (response.includes(`Reset password success!`)) { 
                                 ipcRenderer.send("/login", "auth/login");  
                             }
+
+                            if (!response.includes(`Reset password success!`)) {
+                                reset_password_btn.innerHTML = helper.reset_password_button_innerhtml_context;
+                            } 
                         });
                     }
                 });
