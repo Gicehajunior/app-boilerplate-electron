@@ -2,24 +2,22 @@ const path = require('path');
 const fs = require("fs");
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
-const {phone} = require('phone');
+const {phone} = require('phone'); 
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
 const Util = require("../../../config/utils/Utils"); 
 
 class AuthController extends AuthModel{
 
-    constructor(db, session = {}) {
+    constructor(db, BrowserWindow = undefined) {
         super();
-        this.db = db; 
-        this.sessionObject = session; 
-        this.session = this.sessionObject.session(); 
-
-        this.post_object = undefined;
+        this.db = db;  
+        this.BrowserWindow = BrowserWindow;
+        this.post_object = undefined;  
     }
 
-    index(BrowserWindow, route) {
-        const CurrentWindow = BrowserWindow.getFocusedWindow();
+    index(route) {
+        const CurrentWindow = this.BrowserWindow.getFocusedWindow();
 
         CurrentWindow.loadFile(`${this.current_directory}/resources/${route}.html`);
     }
@@ -29,26 +27,7 @@ class AuthController extends AuthModel{
         
         return response;
     }
-
-    isObject(variable){
-        return (!!variable) && (a.constructor === Object);
-    }
-
-    create_file(filepath, dataObject, encoding) { 
-        fs.writeFile(
-            filepath, 
-            JSON.stringify(dataObject),  
-            encoding,  
-            (err, data) => {
-                if (err){
-                    console.log(err);
-                } else {
-                    console.log("session successfully saved!");
-                }
-            }
-        );
-    }
-
+    
     saveUsers(stringifiedUsersInfo) {  
         const usersInfo = JSON.parse(stringifiedUsersInfo);  
         usersInfo.created_at = this.created_at;
@@ -201,7 +180,7 @@ class AuthController extends AuthModel{
                                 "updated_at": row.updated_at
                             }; 
 
-                            this.sessionObject.save_session(JSON.stringify(object)); 
+                            this.auth.save_session(JSON.stringify(object)); 
 
                             resolve(`password matches`);
                         }
@@ -222,7 +201,7 @@ class AuthController extends AuthModel{
         return response_promise;
     }
 
-    forgotPassword(BrowserWindow, email=[]) { 
+    forgotPassword(email=[]) { 
         const response_promise = new Promise(resolve => {
             if (email.length == 0) {
                 resolve("empty email");
@@ -238,7 +217,7 @@ class AuthController extends AuthModel{
                             console.log(err); 
                         }else{ 
                             if(rows[0] !== undefined) {
-                                this.sessionObject.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
+                                this.auth.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
                             }
                         }
                     });
@@ -252,7 +231,7 @@ class AuthController extends AuthModel{
                         }
                         else { 
                             if(rows[0] !== undefined) {
-                                this.sessionObject.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
+                                this.auth.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
                             }
                         }
                     });  
@@ -281,7 +260,7 @@ class AuthController extends AuthModel{
 
                 const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
 
-                const CurrentWindow = BrowserWindow.getFocusedWindow(); 
+                const CurrentWindow = this.BrowserWindow.getFocusedWindow(); 
                 if (send_email_response_promise == false) {  
                     CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
                 }
@@ -411,7 +390,12 @@ class AuthController extends AuthModel{
         return reset_pass_response_promise;
     }
 
-    createTable(sql_query, table) { 
+    createTable(table_object) { 
+        const table_object_parsed = JSON.parse(table_object);
+
+        const sql_query = table_object_parsed.sql_query;
+        const table = table_object_parsed.table;
+
         const response_promise = new Promise(resolve => {
             if (this.database_type == "sqlite") {
                 try { 
@@ -421,6 +405,7 @@ class AuthController extends AuthModel{
                         resolve(`${table} table creation success`);
                     });  
                 } catch (error) {
+                    console.log(error);
                     resolve(`${table} table creation failed`);
                 } 
             }
@@ -440,9 +425,9 @@ class AuthController extends AuthModel{
     }
     
     logoutUser(BrowserWindow) {  
-        const CurrentWindow = BrowserWindow.getFocusedWindow();
+        const CurrentWindow = this.BrowserWindow.getFocusedWindow();
         
-        this.sessionObject.delete_session().then((response) => {
+        this.auth.delete_session().then((response) => {
             console.log(response);
         }).catch(error => {
             console.log(error);
@@ -450,10 +435,7 @@ class AuthController extends AuthModel{
 
         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
     }
+
 }
 
 module.exports = AuthController;
-
-
-
-

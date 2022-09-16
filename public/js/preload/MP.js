@@ -1,4 +1,4 @@
-const AppUserSession = require("../../config/services/SessionService");
+const AppUserSession = require("../../../config/services/SessionService");
 
 class MP {
     constructor () {

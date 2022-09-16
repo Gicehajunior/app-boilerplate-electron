@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { ipcRenderer } = electron;
 const helper = require('../../app/Helpers/config');
-const MP = require('./MP');
+const MP = require('./preload/MP');
 
 class Dashboard extends MP {
     constructor() {

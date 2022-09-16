@@ -1,7 +1,7 @@
 const AppModel = require("./AppModel");
 const AppUserSession = require("../../config/services/SessionService");
 
-class AuthModel extends AppModel{
+class SettingsModel extends AppModel{
     
     constructor() {
         super();
@@ -11,7 +11,7 @@ class AuthModel extends AppModel{
 
     database_table() {
         const table = [
-            "users"
+            "settings"
         ];
 
         return table;
@@ -19,6 +19,6 @@ class AuthModel extends AppModel{
  
 }
 
-module.exports = AuthModel;
+module.exports = SettingsModel;
 
 
