@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { BrowserWindow, ipcRenderer } = electron;
 const helper = require('../../app/Helpers/config');
-const MP = require('./MP');
+const MP = require('./preload/MP');
 
 class Auth extends MP {
     constructor() {

@@ -1,7 +1,7 @@
 
 require('dotenv').config();
 const helper = require('../../app/Helpers/config');
-const MP = require('./MP');
+const MP = require('./preload/MP');
 
 class GeneralPreload extends MP {
     constructor() {

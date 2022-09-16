@@ -1,7 +1,7 @@
 const AppModel = require("./AppModel");
 const AppUserSession = require("../../config/services/SessionService");
 
-class AuthModel extends AppModel{
+class DashboardModel extends AppModel{
     
     constructor() {
         super();
@@ -19,6 +19,6 @@ class AuthModel extends AppModel{
  
 }
 
-module.exports = AuthModel;
+module.exports = DashboardModel;
 
 

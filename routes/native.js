@@ -1,10 +1,4 @@
-const path = require('path');
-const current_directory = process.cwd();
-const AppModel = require("../app/models/AppModel");
-const AuthController = require("../app/https/auth/AuthController");
-const AppUserSession = require("../config/services/SessionService");
-
-const sessionObject = new AppUserSession(); 
+const RouterService = require("../config/services/Router");
 
 /**
  * PUT your routes here, 
@@ -14,68 +8,23 @@ const sessionObject = new AppUserSession();
  * 
  * @return response
  */
-const Routes = (BrowserWindow, ipcMain, DbConn) => {  
-    const Auth = new AuthController(DbConn, sessionObject);
+const Routes = (BrowserWindow, ipcMain, DbConn) => {    
+    const Router = new RouterService(BrowserWindow, ipcMain, DbConn);
 
-    ipcMain.on("/alertMessage", (event, MessageObject) => {   
-        AppModel.InitAlertModel(BrowserWindow, MessageObject); 
-    });
-    
-    ipcMain.on("/login", (event, route) => {   
-        Auth.index(BrowserWindow, route); 
-    }); 
+    Router.get('/alertMessage', 'SettingsController@InitAlertModel');
+    Router.get('/login', 'AuthController@index');
+    Router.get('/dashboard', 'AuthController@index'); 
 
-    ipcMain.on("/dashboard", (event, route) => {   
-        Auth.index(BrowserWindow, route); 
-    });
-     
-    ipcMain.handle('createTable', (event, table_object) => {
-        const table_object_parsed = JSON.parse(table_object);
-        const response = Auth.createTable(table_object_parsed.sql_query, table_object_parsed.table); 
-        response.then(value => {  
-            event.sender.send("create-table", `${value}`);
-        });
-    });
+    Router.post('createTable', 'AuthController@createTable', "create-table"); 
 
-    ipcMain.handle('registerUser', (event, usersInfo) => { 
-        const response = Auth.saveUsers(usersInfo);  
-        response.then(value => {  
-            event.sender.send("save-users", `${value}`);
-        }); 
-    });
+    Router.post('loginUser', 'AuthController@loginUsers', "login-response");
+    Router.post('registerUser', 'AuthController@saveUsers', "save-users");
 
-    ipcMain.handle('/forgot-password', (event, email) => {
-        const response = Auth.forgotPassword(BrowserWindow, email); 
-        response.then(value => {  
-            event.sender.send("forgot-password-response", `${value}`);
-        });  
-    });
+    Router.post('/forgot-password', 'AuthController@forgotPassword', "forgot-password-response");
+    Router.post('/reset-password', 'AuthController@ResetPassword', "reset-password-response");
 
-    ipcMain.on('/reset-password', (event, post_object) => { 
-        const response = Auth.ResetPassword(post_object);  
-        response.then(value => {  
-            event.sender.send("reset-password-response", `${value}`);
-        });
-    });
-
-    ipcMain.handle('loginUser', (event, usersInfo) => {   
-        const response = Auth.loginUsers(usersInfo); 
-        response.then(value => { 
-            event.sender.send("login-response", `${value}`);
-        });  
-    });
-
-    ipcMain.handle('logoutUser', (event) => {   
-        Auth.logoutUser(BrowserWindow);  
-    });
+    Router.post('logoutUser', 'AuthController@logoutUser');
 } 
 
 module.exports = Routes;
-
-
-
-
-
-
-
 
