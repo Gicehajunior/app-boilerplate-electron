@@ -1,8 +1,7 @@
 const fs = require('fs'); 
 
 class RouterService {
-    constructor(BrowserWindow, ipcMain, DbConn) {
-        this.folder = `${process.cwd()}/app/https/controllers`; 
+    constructor(BrowserWindow, ipcMain, DbConn) { 
         this.BrowserWindow = BrowserWindow;
         this.ipcMain = ipcMain;
         this.DBConnection = DbConn;
