@@ -424,7 +424,7 @@ class AuthController extends AuthModel{
         return response_promise;
     }
     
-    logoutUser(BrowserWindow) {  
+    logoutUser() {  
         const CurrentWindow = this.BrowserWindow.getFocusedWindow();
         
         this.auth.delete_session().then((response) => {
