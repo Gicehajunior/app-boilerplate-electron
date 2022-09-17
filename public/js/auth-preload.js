@@ -230,7 +230,7 @@ class Auth extends MP {
                             "confirm_password": confirm_password.value
                         });
 
-                        ipcRenderer.send("/reset-password", reset_password_post_object);
+                        ipcRenderer.invoke("/reset-password", reset_password_post_object);
 
                         ipcRenderer.on("reset-password-response", (event, response) => {
                             if (response.includes("no user found")) {

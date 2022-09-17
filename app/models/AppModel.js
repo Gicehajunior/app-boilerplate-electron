@@ -1,4 +1,4 @@
-
+const AppUserSession = require("../../config/services/SessionService");
 class AppModel {
 
     constructor () { 
@@ -11,6 +11,9 @@ class AppModel {
 
         this.created_at = this.datetime_now;
         this.updated_at = this.datetime_now;
+        
+        this.auth = new AppUserSession();
+        this.session = this.auth.session();
     }
 
 }
