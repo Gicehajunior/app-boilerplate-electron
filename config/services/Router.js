@@ -18,55 +18,44 @@ class RouterService {
         this.get_route(route, controller, response_medium);
     }
 
-    post_route(route, controller, response_medium = undefined) {
-        const controller_method_array = controller.split("@");  
-
+    post_route(route, controller, response_medium = undefined) { 
         this.ipcMain.handle(route, (event, data) => {  
             try {
-                this.controller = controller_method_array[0].replace("'", "");
-
-                this.method_name = controller_method_array[1].replace("'", ""); 
-
-                let config = this.RequireModule();
-                let controller_class = config.controller_class;
-                let resolved_path = config.resolved_path;
-
-                let controller_class_instance = new controller_class(this.DBConnection, this.BrowserWindow); 
-
-                const responsepromise = controller_class_instance[this.method_name](data); 
-
-                this.response_medium = response_medium;
-
-                this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium); 
+                this.route_process(controller, response_medium, event, data);
             } catch (error) {
                 console.log(error);
             }
         });
     } 
 
-    get_route(route, controller, response_medium = undefined) {
-        const controller_method_array = controller.split("@");
-
+    get_route(route, controller, response_medium = undefined) { 
         this.ipcMain.on(route, (event, data) => {  
             try {
-                this.controller = controller_method_array[0].replace("'", "");
-
-                this.method_name = controller_method_array[1].replace("'", ""); 
-
-                let config = this.RequireModule();
-                let controller_class = config.controller_class;
-                let resolved_path = config.resolved_path;
-                
-                let controller_class_instance = new controller_class(this.DBConnection, this.BrowserWindow); 
-                
-                const responsepromise = controller_class_instance[this.method_name](data);  
-
-                this.response_medium = response_medium;
-                this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium); 
+                this.route_process(controller, response_medium, event, data);
             } catch (error) {
                 console.log(error);
             }
         });
+    }
+
+    route_process(controller, response_medium, event, data) {
+        const controller_method_array = controller.split("@");
+
+        this.controller = controller_method_array[0].replace("'", "");
+
+        this.method_name = controller_method_array[1].replace("'", ""); 
+
+        let config = this.RequireModule();
+        let controller_class = config.controller_class;
+        let resolved_path = config.resolved_path;
+
+        let controller_class_instance = new controller_class(this.DBConnection, this.BrowserWindow); 
+
+        const responsepromise = controller_class_instance[this.method_name](data); 
+
+        this.response_medium = response_medium;
+
+        this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
     }
 
     RequireModule() {
