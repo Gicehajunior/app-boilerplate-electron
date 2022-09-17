@@ -4,7 +4,7 @@ const SettingsModel = require("../../models/SettingsModel");
 
 class SettingsController extends SettingsModel{
 
-    constructor(db, BrowserWindow = undefined) {
+    constructor(db = undefined, BrowserWindow = undefined) {
         super();
         this.db = db;  
         this.BrowserWindow = BrowserWindow;

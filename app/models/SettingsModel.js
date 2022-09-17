@@ -1,12 +1,9 @@
-const AppModel = require("./AppModel");
-const AppUserSession = require("../../config/services/SessionService");
+const AppModel = require("./AppModel"); 
 
 class SettingsModel extends AppModel{
     
     constructor() {
-        super();
-        this.auth = new AppUserSession();
-        this.session = this.auth.session();
+        super(); 
     }
 
     database_table() {
