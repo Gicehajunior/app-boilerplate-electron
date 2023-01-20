@@ -1,7 +1,9 @@
 const AppUserSession = require("../../config/services/SessionService");
-class AppModel {
+const App = require("../../config/app/App");
+class AppModel extends App{
 
     constructor () { 
+        super();
         this.current_directory = process.cwd();
         this.country = process.env.COUNTRY;
         this.database_type = process.env.DB_CONNECTION; 
@@ -14,6 +16,7 @@ class AppModel {
         
         this.auth = new AppUserSession();
         this.session = this.auth.session();
+        this.app = new App();
     }
 
 }
