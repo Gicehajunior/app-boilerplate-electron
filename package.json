@@ -1,7 +1,7 @@
 {
     "name": "app-boilerplate-electron",
     "version": "1.0.0",
-    "description": "Hello World!",
+    "description": "A desktop application boilerplate made with node electron framework.",
     "main": "main.js",
     "scripts": {
         "preinstall": "node ./config/services/DatabaseService.js",
