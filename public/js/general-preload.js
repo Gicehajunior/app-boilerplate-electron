@@ -1,7 +1,7 @@
 
 require('dotenv').config();
 const helper = require('../../app/Helpers/config');
-const MP = require('./MP');
+const MP = require('./preload/MP');
 
 class GeneralPreload extends MP {
     constructor() {
@@ -11,7 +11,16 @@ class GeneralPreload extends MP {
     index() {
         const buttons = document.querySelectorAll(".btn");
         const DateDomElements = document.querySelectorAll(".dom-date");
-        const AppNameDomElements = document.querySelectorAll(".app-name");
+        const AppNameDomElements = document.querySelectorAll(".app-name"); 
+
+        const app_name_elements = [
+            document.querySelectorAll('.title'), 
+            document.querySelectorAll('.navbar-brand')
+        ]
+
+        app_name_elements.forEach(app_name_element => {   
+            app_name_element.innerHTML = helper.app_name;  
+        });
 
         buttons.forEach(button => {
             button.addEventListener('click', event => {

@@ -1,8 +1,9 @@
-const AppModel = require("./AppModel");
-class AuthModel extends AppModel{
+const AppModel = require("./AppModel"); 
+
+class DashboardModel extends AppModel{
     
     constructor() {
-        super();
+        super(); 
     }
 
     database_table() {
@@ -15,6 +16,6 @@ class AuthModel extends AppModel{
  
 }
 
-module.exports = AuthModel;
+module.exports = DashboardModel;
 
 

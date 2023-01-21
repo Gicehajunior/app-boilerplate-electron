@@ -1,7 +1,7 @@
 const electron = require('electron');
 const { BrowserWindow, ipcRenderer } = electron;
 const helper = require('../../app/Helpers/config');
-const MP = require('./MP');
+const MP = require('./preload/MP');
 
 class Auth extends MP {
     constructor() {
@@ -230,7 +230,7 @@ class Auth extends MP {
                             "confirm_password": confirm_password.value
                         });
 
-                        ipcRenderer.send("/reset-password", reset_password_post_object);
+                        ipcRenderer.invoke("/reset-password", reset_password_post_object);
 
                         ipcRenderer.on("reset-password-response", (event, response) => {
                             if (response.includes("no user found")) {
