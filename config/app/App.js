@@ -13,7 +13,7 @@ class App{
         const file_buffer = fs.readFileSync(this.file);
 
         if (file_buffer) {
-            var file_ = file_buffer.toString(); 
+            var file_ = this.removeSpaces(file_buffer.toString()); 
 
             for (const key in post_object) {  
                 var search = `{{ ${key} }}`;
@@ -28,6 +28,13 @@ class App{
         return 'Oops unknown error!'; 
     }
 
+    removeSpaces(str) {
+        var regexPattern = /\s+/g;
+    
+        var ans = str.replace(regexPattern, " ");
+    
+        return ans.trim();
+    }
 }
 
 module.exports = App;
