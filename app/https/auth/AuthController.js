@@ -268,17 +268,22 @@ class AuthController extends AuthModel{
                                     // save security code on database 
                                     const DBUtil = new Util(this.db,  this.database_table()[0]);
                                     this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                                    if ('id' in this.session) {
-                                        DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
-                                            if (response == true) { 
+                                    if (this.session == undefined) {
+                                        if ('id' in this.session) {
+                                            DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
+                                                if (response == true) { 
+                                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                                } 
+                                                else { 
+                                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                                } 
+                                            }).catch((error) => {
                                                 CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                            } 
-                                            else { 
-                                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                            } 
-                                        }).catch((error) => {
+                                            });
+                                        }
+                                        else {
                                             CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                        });
+                                        }
                                     }
                                     else {
                                         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
