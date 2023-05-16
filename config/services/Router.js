@@ -65,8 +65,7 @@ class RouterService {
             this.response_medium = response_medium;
 
             this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
-        } catch (error) {
-            console.log(error);
+        } catch (error) { 
             if (process.env.DEBUG.toUpperCase() == 'TRUE') {
                 if (this.controller == 'Helper') {
                     throw new Error(`${this.controller} class not found!`);
@@ -88,7 +87,7 @@ class RouterService {
         else if (fs.existsSync(`${process.cwd()}/app/https/controllers/${this.controller}.js`)) {
             resolved_path = `app/https/controllers/`;
         }
-        else {
+        else if (this.controller == 'Helper') {
             resolved_path = `app/Helpers/`;
         }  
         
