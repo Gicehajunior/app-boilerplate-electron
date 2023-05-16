@@ -9,10 +9,10 @@ const Util = require("../../../config/utils/Utils");
 
 class AuthController extends AuthModel{
 
-    constructor(db = undefined, BrowserWindow = undefined) {
-        super();
-        this.db = db;  
+    constructor(BrowserWindow = undefined, db = undefined) {
+        super(); 
         this.BrowserWindow = BrowserWindow;
+        this.db = db;  
         this.post_object = undefined;  
     }
 

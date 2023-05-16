@@ -8,6 +8,8 @@ class RouterService {
         this.controller = undefined;
         this.method_name = undefined;
         this.response_medium = undefined;
+
+        this.get('/alertMessage', 'Helper@InitAlertModel');
     }
 
     post(route, controller, response_medium = undefined) {  
@@ -45,17 +47,35 @@ class RouterService {
 
         this.method_name = controller_method_array[1].replace("'", ""); 
 
-        let config = this.RequireModule();
-        let controller_class = config.controller_class;
-        let resolved_path = config.resolved_path;
+        try {
+            let config = this.RequireModule();
+            let controller_class = config.controller_class;
+            let resolved_path = config.resolved_path;
+            let controller_class_instance = undefined;
 
-        let controller_class_instance = new controller_class(this.DBConnection, this.BrowserWindow); 
+            if (this.controller == 'Helper') {
+                controller_class_instance = new controller_class(this.BrowserWindow);
+            }
+            else {
+                controller_class_instance = new controller_class(this.BrowserWindow, this.DBConnection);
+            } 
 
-        const responsepromise = controller_class_instance[this.method_name](data); 
+            const responsepromise = controller_class_instance[this.method_name](data); 
 
-        this.response_medium = response_medium;
+            this.response_medium = response_medium;
 
-        this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
+            this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
+        } catch (error) { 
+            if (process.env.DEBUG.toUpperCase() == 'TRUE') {
+                if (this.controller == 'Helper') {
+                    throw new Error(`${this.controller} class not found!`);
+                }
+                else {
+                    throw new Error(`${this.controller} Controller not found!`);
+                } 
+
+            }
+        } 
     }
 
     RequireModule() {
@@ -64,9 +84,12 @@ class RouterService {
         if (fs.existsSync(`${process.cwd()}/app/https/auth/${this.controller}.js`)) {
             resolved_path = `app/https/auth/`;
         }
-        else {
+        else if (fs.existsSync(`${process.cwd()}/app/https/controllers/${this.controller}.js`)) {
             resolved_path = `app/https/controllers/`;
         }
+        else if (this.controller == 'Helper') {
+            resolved_path = `app/Helpers/`;
+        }  
         
         let controller_class = require(`../../${resolved_path}${this.controller}`);
 

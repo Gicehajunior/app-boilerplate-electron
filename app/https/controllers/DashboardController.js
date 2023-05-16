@@ -1,10 +1,10 @@
 const DashboardModel = require("../../models/DashboardModel");  
 class DashboardController extends DashboardModel{
 
-    constructor(db = undefined, BrowserWindow = undefined) {
-        super();
-        this.db = db;  
+    constructor(BrowserWindow = undefined, db = undefined) {
+        super(); 
         this.BrowserWindow = BrowserWindow;
+        this.db = db;
         this.post_object = undefined; 
     }
     
