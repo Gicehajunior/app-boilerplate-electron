@@ -11,7 +11,6 @@ const RouterService = require("../config/services/Router");
 const Routes = (BrowserWindow, ipcMain, DbConn) => {    
     const Router = new RouterService(BrowserWindow, ipcMain, DbConn);
 
-    Router.get('/alertMessage', 'SettingsController@InitAlertModel');
     Router.get('/login', 'AuthController@index');
     Router.get('/dashboard', 'AuthController@index'); 
 

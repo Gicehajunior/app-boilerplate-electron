@@ -2,9 +2,7 @@
 const electron = require("electron");
 const { app, contextBridge, BrowserWindow, ipcMain } = electron;
 const path = require('path');
-require('dotenv').config();
-
-app.disableHardwareAcceleration();
+require('dotenv').config(); 
 
 const Database = require("./config/database/database");
 
@@ -57,6 +55,7 @@ app.whenReady().then(() => {
     // dock icon is clicked and there are no other windows open.
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow();
+      app.commandLine.appendSwitch('enable-gpu-rasterization');
     }
   });
 });
