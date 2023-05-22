@@ -1,7 +1,8 @@
+require('dotenv').config();
+const config = require('../../app/Helpers/config');
+const MP = require('./SuperPreload/MP');
 const electron = require('electron');
 const { ipcRenderer } = electron;
-const helper = require('../../app/Helpers/config');
-const MP = require('./preload/MP');
 
 class Dashboard extends MP {
     constructor() {
@@ -17,8 +18,9 @@ class Dashboard extends MP {
                 ipcRenderer.send('/alertMessage', {
                     status: 'info',
                     title: "Welcome Message Notification",
-                    message: `Hello ${this.session['username']}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`
+                    message: config.dashboard_welcome_notification
                 });
+                // `Hello ${this.session['username']}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`
             }
         });
     }

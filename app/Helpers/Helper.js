@@ -26,6 +26,7 @@ class Helper{
             normalizeAccessKeys: (NotificationMessageObject.normalizeAccessKeys) ? NotificationMessageObject.normalizeAccessKeys : undefined
         });
     } 
+
 }
 
 module.exports = Helper;

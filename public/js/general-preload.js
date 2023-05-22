@@ -1,7 +1,6 @@
-
 require('dotenv').config();
-const helper = require('../../app/Helpers/config');
-const MP = require('./preload/MP');
+const config = require('../../app/Helpers/config');
+const MP = require('./SuperPreload/MP');
 
 class GeneralPreload extends MP {
     constructor() {
@@ -19,18 +18,18 @@ class GeneralPreload extends MP {
         ]
 
         app_name_elements.forEach(app_name_element => {   
-            app_name_element.innerHTML = helper.app_name;  
+            app_name_element.innerHTML = config.app_name;  
         });
 
         buttons.forEach(button => {
             button.addEventListener('click', event => {
-                button.innerHTML = helper.button_click_innerhtml_context;
+                button.innerHTML = config.button_click_innerhtml_context;
             });
         });
 
         AppNameDomElements.forEach(AppNameDomElement => {
             if (document.body.contains(AppNameDomElement)) {
-                AppNameDomElement.innerHTML = helper.footer_app_name;
+                AppNameDomElement.innerHTML = config.footer_app_name;
             }
         });
 
