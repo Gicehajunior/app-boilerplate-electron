@@ -1,3 +1,4 @@
+const Routes = require("../../routes/native");
 const sqlite3 = require('sqlite3').verbose();
 const mysql = require('mysql');
 
@@ -81,6 +82,24 @@ class Database {
         });
         
         return db
+    }
+
+    initDbConnection(DB, BrowserWindow, ipcMain) {  
+        var DB = DB;
+        var BrowserWindow = BrowserWindow;
+        var ipcMain = ipcMain;
+        var DbConn = undefined;
+
+        if (process.env.DB_CONNECTION == "mysql") {
+            let connection_response = DB.mysql_connection(process.env.DB_NAME);
+            connection_response.then(DbConn => {  
+                Routes(BrowserWindow, ipcMain, DbConn);
+            });  
+        }
+        else if (process.env.DB_CONNECTION == "sqlite") {
+            DbConn = DB.sqlite3_connection(process.env.DB_NAME);
+            Routes(BrowserWindow, ipcMain, DbConn);
+        } 
     }
 }
 

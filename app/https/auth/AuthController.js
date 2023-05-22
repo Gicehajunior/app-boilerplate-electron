@@ -3,6 +3,7 @@ const fs = require("fs");
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
 const {phone} = require('phone'); 
+const config = require("../../Helpers/config");
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
 const Util = require("../../../config/utils/Utils"); 
@@ -35,17 +36,18 @@ class AuthController extends AuthModel{
 
         const getRow = (callback) => { 
             if (!EmailValidator.isEmail(usersInfo.email)) { 
-                callback("Invalid email");
+                callback(config.errors.invalid_email);
             }
             else if (this.validatePhone(usersInfo.contact).isValid == false) {
-                callback("Invalid contact");
+                callback(config.errors.invalid_contact);
             }
             else {
                 if (this.database_type == "sqlite") { 
                     this.db.all(`SELECT * FROM users WHERE email = ?`, [usersInfo.email], (err, rows) => {
                         if(err){
                             // Crone jobs will be implemented to handle this type of error!
-                            console.log(err); 
+                            console.log(err);
+                            callback(err); 
                         }else{
                             callback(rows[0]);
                         }
@@ -56,7 +58,8 @@ class AuthController extends AuthModel{
                     this.db.query(sql, (err, rows) => {
                         if (err) {
                             // Crone jobs will be implemented to handle this type of error!
-                            console.log(err); 
+                            console.log(err);
+                            callback(err); 
                         }
                         else { 
                             callback(rows[0]);
@@ -73,17 +76,17 @@ class AuthController extends AuthModel{
                     if (row.email == usersInfo.email) {  
                         exists.push(row); 
                     }  
-                    else if (row.includes("Invalid email")) {
-                        resolve("Invalid email");
+                    else if (row == config.errors.invalid_email) {
+                        resolve({status: 'fail', message: config.errors.invalid_email});
                     }
-                    else if (row.includes("Invalid contact")) {
-                        resolve("Invalid contact");
+                    else if (row == config.errors.invalid_contact) {
+                        resolve({status: 'fail', message: config.errors.invalid_contact});
                     } 
                 } 
                  
                 if (typeof row !== "string") {
                     if (exists.length > 0) { 
-                        resolve(`user exists`);
+                        resolve({status: 'fail', message: config.user_exists});
                     }
                     else { 
                         bcrypt.genSalt(saltRounds, (err, salt) => {
@@ -91,20 +94,21 @@ class AuthController extends AuthModel{
                                 // Crone jobs will be implemented to handle this type of error!
                                 if (err) {
                                     console.log(err);
+                                    callback(err);
                                 }   
                                 else 
                                 if (hash.length == 0) {
-                                    resolve(`Please input a strong password!`);
+                                    resolve({status: 'fail', message: config.errors.invalid_password});
                                 }
                                 else {
                                     usersInfo.password = hash;
                                     const DBUtil = new Util(this.db, this.database_table()[0]);
                                     DBUtil.save_resource(JSON.stringify(usersInfo)).then(response => { 
                                         if (response == true) {
-                                            resolve(`Registration successfull!`);
+                                            resolve({status: 'OK', message: config.success.create_account});
                                         } 
                                         else {
-                                            resolve(`Registration failed!`);
+                                            resolve({status: 'fail', message: config.errors.create_account});
                                         } 
                                     });
                                 }
@@ -114,7 +118,7 @@ class AuthController extends AuthModel{
                 }
             }
 
-            const row = getRow(callbackFunc);
+            const row = getRow(callbackFunc); 
         
         });
         return response_promise;
@@ -125,14 +129,15 @@ class AuthController extends AuthModel{
 
         const getRow = (email, callback) => { 
             if (!EmailValidator.isEmail(usersInfo.email)) { 
-                callback("Invalid email");
+                callback({status: 'fail', message: config.errors.invalid_email});
             }
             else {
                 if (this.database_type == "sqlite") {
                     this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
                         if(err){
                             // Crone jobs will be implemented to handle this type of error!
-                            console.log(err); 
+                            console.log(err);
+                            callback(err); 
                         }else{
                             callback(rows[0]);
                         }
@@ -144,6 +149,7 @@ class AuthController extends AuthModel{
                         if (err) {
                             // Crone jobs will be implemented to handle this type of error!
                             console.log(err);
+                            callback(err);
                         }
                         else { 
                             callback(rows[0]);
@@ -156,11 +162,11 @@ class AuthController extends AuthModel{
         const response_promise = new Promise(resolve => {
             const callbackFunc = (row) => {  
                 if (row == undefined) {
-                    resolve(`no user found`);
+                    resolve({status: 'fail', message: config.errors.user_not_exists});
                 }  
-                else if (typeof row == "string") {
-                    if (row.includes("Invalid email")) {
-                        resolve("Invalid email");
+                else if (typeof row == "string" && variable !== null) {
+                    if (row == config.errors.invalid_email) {
+                        resolve({status: 'fail', message: config.errors.invalid_email});
                     }
                 }
                 else if (row.email == usersInfo.email) {  
@@ -168,6 +174,7 @@ class AuthController extends AuthModel{
                         // Crone jobs will be implemented to handle this type of error!
                         if (err) {
                             console.log(err);
+                            callback({status: 'OK', message: err});
                         } 
                         else if (result == true) {   
                             const object = {
@@ -182,15 +189,15 @@ class AuthController extends AuthModel{
 
                             this.auth.save_session(JSON.stringify(object)); 
 
-                            resolve(`password matches`);
+                            resolve({status: 'OK', message: config.success.login_success});
                         }
                         else {
-                            resolve(`Incorrect login credentials`);
+                            resolve({status: 'fail', message: config.errors.wrong_user_credentials});
                         }  
                     });  
                 }
                 else {
-                    resolve(`no user found`);
+                    resolve({status: 'fail', message: config.errors.user_not_exists});
                 } 
                  
             }
@@ -204,17 +211,18 @@ class AuthController extends AuthModel{
     forgotPassword(email=[]) { 
         const response_promise = new Promise(resolve => {
             if (email.length == 0) {
-                resolve("empty email");
+                resolve({status: 'fail', message: config.errors.empty_email});
             }
             else if (!EmailValidator.isEmail(email)) { 
-                resolve("Invalid email");
+                resolve({status: 'fail', message: config.errors.invalid_email});
             } 
             else {
                 if (this.database_type == "sqlite") {
                     this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
                         if(err){
                             // Crone jobs will be implemented to handle this type of error!
-                            console.log(err); 
+                            console.log(err);
+                            callback({status: 'OK', message: err}); 
                         }else{ 
                             if(rows[0] !== undefined) {
                                 this.auth.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
@@ -227,7 +235,8 @@ class AuthController extends AuthModel{
                     this.db.query(sql, (err, rows) => {
                         if (err) {
                             // Crone jobs will be implemented to handle this type of error!
-                            console.log(err); 
+                            console.log(err);
+                            callback({status: 'OK', message: err}); 
                         }
                         else { 
                             if(rows[0] !== undefined) {
@@ -268,7 +277,7 @@ class AuthController extends AuthModel{
                                     // save security code on database 
                                     const DBUtil = new Util(this.db,  this.database_table()[0]);
                                     this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                                    if (this.session == undefined) {
+                                    if (this.session !== undefined) {
                                         if ('id' in this.session) {
                                             DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
                                                 if (response == true) { 
@@ -310,7 +319,8 @@ class AuthController extends AuthModel{
                 this.db.all(`SELECT rowid, * FROM users WHERE rowid = ?`, [this.session["id"]], (err, rows) => {
                     if(err){
                         // Crone jobs will be implemented to handle this type of error!
-                        console.log(err); 
+                        console.log(err);
+                        callback(err); 
                     }else{  
                         callback(rows[0]);
                     }
@@ -322,6 +332,7 @@ class AuthController extends AuthModel{
                     if (err) {
                         // Crone jobs will be implemented to handle this type of error!
                         console.log(err);
+                        callback(err);
                     }
                     else { 
                         callback(rows[0]);
@@ -334,11 +345,11 @@ class AuthController extends AuthModel{
             const callbackFunc = (row) => { 
                 
                 if (row == undefined) {
-                    resolve(`no user found`);
+                    resolve({status: 'fail', message: config.errors.user_not_exists});
                 }  
-                else if (typeof row == "string") {
-                    if (row.includes("Invalid email")) {
-                        resolve("Invalid email");
+                else if (typeof row == "string" && variable !== null) {
+                    if (row == config.errors.invalid_email) {
+                        resolve({status: 'fail', message: config.errors.invalid_email});
                     }
                 }
                 else if (row.email == this.session["email"]) {  
@@ -349,13 +360,13 @@ class AuthController extends AuthModel{
                             bcrypt.hash(object.password, salt, (err, hash) => {
                                 // Crone jobs will be implemented to handle this type of error!
                                 if (err) { 
-                                    resolve("Unexpected error!");
+                                    resolve({status: 'fail', message: config.errors.unexpected_error});
                                 } 
                                 else if (object.password !== object.confirm_password) { 
-                                    resolve("Password mismatch");
+                                    resolve({status: 'fail', message: config.errors.password_mismatch});
                                 }  
                                 else if (hash.length == 0) {
-                                    resolve(`Please input a strong password!`);
+                                    resolve({status: 'fail', message: config.errors.invalid_password});
                                 }
                                 else { 
                                     this.post_object = JSON.stringify({
@@ -367,24 +378,24 @@ class AuthController extends AuthModel{
                                     const DBUtil = new Util(this.db, this.database_table()[0]);
                                     DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
                                         if (response == true) {
-                                            resolve(`Reset password success!`);    
+                                            resolve({status: 'OK', message: config.success.reset_password});    
                                         } 
                                         else {
-                                            resolve(`Reset Password failed!`);
+                                            resolve({status: 'failed', message: config.errors.reset_password}); 
                                         } 
                                     }).catch((error) => {
-                                        resolve(`Reset Password failed!`);
+                                        resolve({status: 'failed', message: config.errors.reset_password}); 
                                     });;    
                                 }
                             });
                         });
                     } 
                     else {
-                        resolve("wrong security_code")
+                        resolve({status: 'failed', message: config.errors.wrong_security_code}); 
                     }
                 }
                 else {
-                    resolve(`no user found`);
+                    resolve({status: 'fail', message: config.errors.user_not_exists});
                 } 
                  
             }
@@ -407,20 +418,20 @@ class AuthController extends AuthModel{
                     this.db.serialize(() => {
                         this.db.run(sql_query);
                         
-                        resolve(`${table} table creation success`);
+                        resolve({status: 'OK', message: `${table} table creation success`});
                     });  
                 } catch (error) {
                     console.log(error);
-                    resolve(`${table} table creation failed`);
+                    resolve({status: 'fail', message: `${table} table creation failed`});
                 } 
             }
             else if (this.database_type == "mysql") { 
                 this.db.query(sql_query, (err, result) => {
                     if (err) {  
-                        resolve(`${table} table creation failed`);
+                        resolve({status: 'fail', message: `${table} table creation failed`});
                     }
                     else {
-                        resolve(`${table} table creation success`);
+                        resolve({status: 'OK', message: `${table} table creation success`});
                     }
                 }); 
             }

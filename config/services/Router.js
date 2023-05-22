@@ -100,7 +100,7 @@ class RouterService {
         if (fs.existsSync(controller_module)) {
             Promise.resolve(responsepromise).then(value => {  
                 if (value) {
-                    event.sender.send(response_medium, `${value}`);
+                    event.sender.send(response_medium, `${JSON.stringify(value)}`);
                 } 
             });
         } 
