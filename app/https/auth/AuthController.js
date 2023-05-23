@@ -222,7 +222,7 @@ class AuthController extends AuthModel{
                         if(err){
                             // Crone jobs will be implemented to handle this type of error!
                             console.log(err);
-                            callback({status: 'OK', message: err}); 
+                            callback({status: 'fail', message: err}); 
                         }else{ 
                             if(rows[0] !== undefined) {
                                 this.auth.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
@@ -236,7 +236,7 @@ class AuthController extends AuthModel{
                         if (err) {
                             // Crone jobs will be implemented to handle this type of error!
                             console.log(err);
-                            callback({status: 'OK', message: err}); 
+                            callback({status: 'fail', message: err}); 
                         }
                         else { 
                             if(rows[0] !== undefined) {
@@ -244,66 +244,64 @@ class AuthController extends AuthModel{
                             }
                         }
                     });  
-                }
+                }  
 
-                setTimeout(() => { 
-                    const MailerService = new Mailer();
+                const MailerService = new Mailer();
 
-                    const security_code = Math.floor(100000 + Math.random() * 900000);
-                    const recipients = email
-                    
-                    const subject = "Reset Password Security Code";  
-                    const html_message_formart = this.app.file_parser(
-                        `${this.current_directory}/resources/app/mails/security_code_mail.html`,
-                        {
-                            "security_code": security_code
-                        }
-                    )
-                    const text_message_formart = undefined;
-
-                    const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
-
-                    const CurrentWindow = this.BrowserWindow.getFocusedWindow(); 
-                    if (send_email_response_promise == false) {  
-                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                const security_code = Math.floor(100000 + Math.random() * 900000);
+                const recipients = email
+                
+                const subject = "Reset Password Security Code";  
+                const html_message_formart = this.app.file_parser(
+                    `${this.current_directory}/resources/app/mails/security_code_mail.html`,
+                    {
+                        "security_code": security_code
                     }
-                    else {
-                        try { 
-                            send_email_response_promise.then(send_email_response => {  
-                                if (send_email_response == false) {
-                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
-                                }
-                                else if (send_email_response.response.includes("OK")) {
-                                    // save security code on database 
-                                    const DBUtil = new Util(this.db,  this.database_table()[0]);
-                                    this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
-                                    if (this.session !== undefined) {
-                                        if ('id' in this.session) {
-                                            DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
-                                                if (response == true) { 
-                                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                                } 
-                                                else { 
-                                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                                } 
-                                            }).catch((error) => {
+                )
+                const text_message_formart = undefined;
+
+                const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
+
+                const CurrentWindow = this.BrowserWindow.getFocusedWindow(); 
+                if (send_email_response_promise == false) {  
+                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                }
+                else {
+                    try { 
+                        send_email_response_promise.then(send_email_response => {  
+                            if (send_email_response == false) {
+                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                            }
+                            else if (send_email_response.response.includes("OK")) {
+                                // save security code on database 
+                                const DBUtil = new Util(this.db,  this.database_table()[0]);
+                                this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
+                                if (this.session !== undefined) {
+                                    if ('id' in this.session) {
+                                        DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
+                                            if (response == true) { 
                                                 CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                            });
-                                        }
-                                        else {
+                                            } 
+                                            else { 
+                                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                            } 
+                                        }).catch((error) => {
                                             CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                                        }
+                                        });
                                     }
                                     else {
                                         CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
                                     }
                                 }
-                            }); 
-                        } catch (error) { 
-                            CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
-                        } 
+                                else { 
+                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                }
+                            }
+                        }); 
+                    } catch (error) {  
+                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
                     } 
-                }, 2000);
+                }  
             }
         });
 
@@ -381,17 +379,17 @@ class AuthController extends AuthModel{
                                             resolve({status: 'OK', message: config.success.reset_password});    
                                         } 
                                         else {
-                                            resolve({status: 'failed', message: config.errors.reset_password}); 
+                                            resolve({status: 'fail', message: config.errors.reset_password}); 
                                         } 
                                     }).catch((error) => {
-                                        resolve({status: 'failed', message: config.errors.reset_password}); 
+                                        resolve({status: 'fail', message: config.errors.reset_password}); 
                                     });;    
                                 }
                             });
                         });
                     } 
                     else {
-                        resolve({status: 'failed', message: config.errors.wrong_security_code}); 
+                        resolve({status: 'fail', message: config.errors.wrong_security_code}); 
                     }
                 }
                 else {
@@ -420,15 +418,14 @@ class AuthController extends AuthModel{
                         
                         resolve({status: 'OK', message: `${table} table creation success`});
                     });  
-                } catch (error) {
-                    console.log(error);
-                    resolve({status: 'fail', message: `${table} table creation failed`});
+                } catch (error) { 
+                    resolve({status: 'fail', message: `${table} table creation fail`});
                 } 
             }
             else if (this.database_type == "mysql") { 
                 this.db.query(sql_query, (err, result) => {
                     if (err) {  
-                        resolve({status: 'fail', message: `${table} table creation failed`});
+                        resolve({status: 'fail', message: `${table} table creation fail`});
                     }
                     else {
                         resolve({status: 'OK', message: `${table} table creation success`});
