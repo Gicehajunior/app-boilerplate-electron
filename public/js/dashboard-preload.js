@@ -20,7 +20,6 @@ class Dashboard extends MP {
                     title: "Welcome Message Notification",
                     message: config.dashboard_welcome_notification
                 });
-                // `Hello ${this.session['username']}. Welcome back to the system.\n\n For any Assistance in using the system, Please contact system administrator.\n\n Thank you!`
             }
         });
     }

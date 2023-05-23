@@ -84,6 +84,7 @@ class Auth extends MP {
                     users_message.innerHTML = config.fill_in_all_fields;
                     users_message.style.color = "red";
                     register_btn.innerHTML = config.register_button_innerhtml_context;
+                    register_btn.disabled = false;
                 }
                 else {
                     const usersInfo = {
@@ -112,10 +113,7 @@ class Auth extends MP {
                             users_message.style.color = "red";
                         }
 
-                        if (response.status == 'fail') {
-                            register_btn.innerHTML = config.register_button_innerhtml_context;
-                        } 
-
+                        register_btn.innerHTML = config.register_button_innerhtml_context;
                         register_btn.disabled = false;
                     });
                 }
@@ -131,6 +129,7 @@ class Auth extends MP {
                     users_message.innerHTML = config.errors.fill_in_all_fields;
                     users_message.style.color = "red";
                     login_user_btn.innerHTML = config.login_button_innerhtml_context;
+                    login_user_btn.disabled = false;
                 }
                 else {
                     const usersInfo = {
@@ -154,12 +153,10 @@ class Auth extends MP {
                         else {
                             users_message.innerHTML = response.message;
                             users_message.style.color = "red";
+                            login_user_btn.disabled = false;
                         } 
 
-                        if (response.status == 'fail') {
-                            login_user_btn.innerHTML = config.login_button_innerhtml_context;
-                        }
-                        login_user_btn.disabled = false;
+                        login_user_btn.innerHTML = config.login_button_innerhtml_context; 
                     });
                 }
             });
@@ -175,15 +172,16 @@ class Auth extends MP {
                             message: config.input_security_code_notification
                         });
                         request_security_code_btn.innerHTML = config.forgot_password_button_innerhtml_context;
+                        request_security_code_btn.disabled = false;
                     }
                     else {
                         ipcRenderer.invoke("/forgot-password", email.value);
 
                         ipcRenderer.on("forgot-password-response", (event, response) => {
                             var response = JSON.parse(response);  
-                            if (response.status == 'fail') {
+                            if (response.status == 'OK') {
                                 ipcRenderer.send('/alertMessage', {
-                                    status: 'error',
+                                    status: 'info',
                                     title: config.notification_title.forgot_password_notification_title,
                                     message: response.message
                                 });
@@ -241,10 +239,7 @@ class Auth extends MP {
                                 });
                             } 
 
-                            if (response.status == 'fail') {
-                                reset_password_btn.innerHTML = config.reset_password_button_innerhtml_context;
-                            } 
-
+                            reset_password_btn.innerHTML = config.reset_password_button_innerhtml_context;
                             reset_password_btn.disabled = false;
                         });
                     }
