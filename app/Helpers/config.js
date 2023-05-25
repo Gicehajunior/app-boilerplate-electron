@@ -17,7 +17,8 @@ module.exports = {
         login_notification_title: "Login Notification",
         reset_password_notification_title: "Reset Password Notification",
         input_security_code_notification_title: "Input Security Code Notification",
-        forgot_password_notification_title: "Forgot Password Notification"
+        forgot_password_notification_title: "Forgot Password Notification",
+        dashboard_welcome_notification_title: "Welcome Message Notification"
     },
     errors: {
         fill_in_all_fields: `<small>Please fill in all fields to login!</small>`,
@@ -30,7 +31,7 @@ module.exports = {
         wrong_user_credentials: `Wrong auth credentials`,
         user_not_exists: `<small>No user found with the input Email. Please register to proceed!</small>`,
         unexpected_error: `Please try again or consult System Administrator for help!`,
-        wrong_security_code: `You entered Incorrect Security Passcode. Please check the latest passcode and try again!`,
+        wrong_security_code: `You entered Incorrect Security Passcode. Please check the latest passcode or close and reopen the application and try resetting your password again!`,
         create_account: 'Registration failed!',
         reset_password: `Password Reset failed!`
     },

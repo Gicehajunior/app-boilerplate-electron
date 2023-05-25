@@ -144,11 +144,7 @@ class Auth extends MP {
                         if (response.status == 'OK') {
                             users_message.innerHTML = response.message;
                             users_message.style.color = "green";
-                            this.clearFormInputs();
-                            
-                            setTimeout(() => {
-                                ipcRenderer.send("/dashboard", "views/dashboard");
-                            }, 2000);
+                            this.clearFormInputs(); 
                         }
                         else {
                             users_message.innerHTML = response.message;

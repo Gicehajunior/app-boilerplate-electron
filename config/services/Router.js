@@ -40,42 +40,31 @@ class RouterService {
         });
     }
 
-    route_process(controller, response_medium, event, data) {
+    route_process(controller, response_medium, event, data = {}) {
         const controller_method_array = controller.split("@");
 
         this.controller = controller_method_array[0].replace("'", "");
 
         this.method_name = controller_method_array[1].replace("'", ""); 
 
-        try {
-            let config = this.RequireModule();
-            let controller_class = config.controller_class;
-            let resolved_path = config.resolved_path;
-            let controller_class_instance = undefined;
+        let config = this.RequireModule();
+        let controller_class = config.controller_class;
+        let resolved_path = config.resolved_path;
+        let controller_class_instance = undefined;
 
-            if (this.controller == 'Helper') {
-                controller_class_instance = new controller_class(this.BrowserWindow);
-            }
-            else {
-                controller_class_instance = new controller_class(this.BrowserWindow, this.DBConnection);
-            } 
-
-            const responsepromise = controller_class_instance[this.method_name](data); 
-
-            this.response_medium = response_medium;
-
-            this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
-        } catch (error) { 
-            if (process.env.DEBUG.toUpperCase() == 'TRUE') {
-                if (this.controller == 'Helper') {
-                    throw new Error(`${this.controller} class not found!`);
-                }
-                else {
-                    throw new Error(`${this.controller} Controller not found!`);
-                } 
-
-            }
+        if (this.controller == 'Helper') {
+            controller_class_instance = new controller_class(this.BrowserWindow);
+        }
+        else {
+            controller_class_instance = new controller_class(this.BrowserWindow, this.DBConnection);
         } 
+
+        const responsepromise = controller_class_instance[this.method_name](data); 
+
+        this.response_medium = response_medium;
+
+        this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
+        
     }
 
     RequireModule() {

@@ -17,12 +17,6 @@ class AuthController extends AuthModel{
         this.post_object = undefined;  
     }
 
-    index(route) {
-        const CurrentWindow = this.BrowserWindow.getFocusedWindow();
-
-        CurrentWindow.loadFile(`${this.current_directory}/resources/${route}.html`);
-    }
-
     validatePhone(phonenumber) {
         const response = phone(phonenumber, {country: `${this.country}`}); 
         
@@ -187,9 +181,8 @@ class AuthController extends AuthModel{
                                 "updated_at": row.updated_at
                             }; 
 
-                            this.auth.save_session(JSON.stringify(object)); 
-
-                            resolve({status: 'OK', message: config.success.login_success});
+                            this.auth.save_session(JSON.stringify(object));  
+                            this.route("resources/views/", "dashboard");
                         }
                         else {
                             resolve({status: 'fail', message: config.errors.wrong_user_credentials});
@@ -245,6 +238,8 @@ class AuthController extends AuthModel{
                         }
                     });  
                 }  
+ 
+                this.session = this.session;
 
                 const MailerService = new Mailer();
 
@@ -252,25 +247,20 @@ class AuthController extends AuthModel{
                 const recipients = email
                 
                 const subject = "Reset Password Security Code";  
-                const html_message_formart = this.app.file_parser(
-                    `${this.current_directory}/resources/app/mails/security_code_mail.html`,
-                    {
-                        "security_code": security_code
-                    }
-                )
+                const html_message_formart = this.mail_parse(`security_code_mail`, {"security_code": security_code});
                 const text_message_formart = undefined;
 
                 const send_email_response_promise = MailerService.send(recipients, subject, html_message_formart, text_message_formart);
 
                 const CurrentWindow = this.BrowserWindow.getFocusedWindow(); 
                 if (send_email_response_promise == false) {  
-                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                    this.route("resources/auth/", "reset-password");  
                 }
                 else {
                     try { 
                         send_email_response_promise.then(send_email_response => {  
                             if (send_email_response == false) {
-                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);  
+                                this.route("resources/auth/", "reset-password");  
                             }
                             else if (send_email_response.response.includes("OK")) {
                                 // save security code on database 
@@ -280,26 +270,26 @@ class AuthController extends AuthModel{
                                     if ('id' in this.session) {
                                         DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
                                             if (response == true) { 
-                                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                                this.route("resources/auth/", "reset-password");
                                             } 
                                             else { 
-                                                CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                                this.route("resources/auth/", "reset-password");
                                             } 
                                         }).catch((error) => {
-                                            CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                            this.route("resources/auth/", "reset-password");
                                         });
                                     }
                                     else {
-                                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                        this.route("resources/auth/", "reset-password");
                                     }
                                 }
                                 else { 
-                                    CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                                    this.route("resources/auth/", "reset-password"); 
                                 }
                             }
                         }); 
                     } catch (error) {  
-                        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/reset-password.html`);
+                        this.route("resources/auth/", "reset-password");
                     } 
                 }  
             }
@@ -376,14 +366,14 @@ class AuthController extends AuthModel{
                                     const DBUtil = new Util(this.db, this.database_table()[0]);
                                     DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
                                         if (response == true) {
-                                            resolve({status: 'OK', message: config.success.reset_password});    
+                                            this.route("resources/auth/", "login");    
                                         } 
                                         else {
                                             resolve({status: 'fail', message: config.errors.reset_password}); 
                                         } 
                                     }).catch((error) => {
                                         resolve({status: 'fail', message: config.errors.reset_password}); 
-                                    });;    
+                                    });    
                                 }
                             });
                         });
@@ -446,7 +436,7 @@ class AuthController extends AuthModel{
             console.log(error);
         });
 
-        CurrentWindow.loadFile(`${this.current_directory}/resources/auth/login.html`); 
+        this.route("resources/auth/", "login"); 
     }
 
 }
