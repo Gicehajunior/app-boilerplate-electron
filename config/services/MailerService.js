@@ -1,7 +1,7 @@
 "use strict";
-const Nodemailer = require("nodemailer");  
 require('dotenv').config();
-
+const mail = require('../app/mail');
+const Nodemailer = require("nodemailer");  
 class Mailer {
     constructor(
         mail_host = undefined, 
@@ -11,12 +11,12 @@ class Mailer {
         email_username = undefined, 
         email_password = undefined
     ) {
-        this.mail_host = (process.env.MAIL_HOST) ? process.env.MAIL_HOST : mail_host;
-        this.mail_port = (process.env.MAIL_PORT) ? process.env.MAIL_PORT : mail_port;
-        this.mail_source_address = (process.env.MAIL_SOURCE_ADDRESS) ? process.env.MAIL_SOURCE_ADDRESS : mail_source_address;
-        this.mail_encryption_criteria = (process.env.MAIL_ENCRYPTION_CRITERIA) ? process.env.MAIL_ENCRYPTION_CRITERIA : mail_encryption_criteria;
-        this.email_username = (process.env.MAIL_SOURCE_USERNAME) ? process.env.MAIL_SOURCE_USERNAME : email_username;
-        this.email_password = (process.env.MAIL_SOURCE_ADDRESS_PASSWORD) ? process.env.MAIL_SOURCE_ADDRESS_PASSWORD : email_password;
+        this.mail_host = (mail.mailer.smtp.host) ? mail.mailer.smtp.host : mail_host;
+        this.mail_port = (mail.mailer.smtp.port) ? mail.mailer.smtp.port : mail_port;
+        this.mail_encryption_criteria = (mail.mailer.smtp.encryption_criteria) ? mail.mailer.smtp.encryption_criteria : mail_encryption_criteria;
+        this.mail_source_address = (mail.source.email_address) ? mail.source.email_address : mail_source_address;
+        this.email_username = (mail.source.email_username) ? mail.source.email_username : email_username;
+        this.email_password = (mail.source.email_password) ? mail.source.email_password : email_password;
     }
 
     async send(recipients=[], subject, html_message_formart, text_message_formart = undefined) {  

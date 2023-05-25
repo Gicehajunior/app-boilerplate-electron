@@ -1,7 +1,8 @@
 // Modules to control application life and create native browser window
 require('dotenv').config(); 
 const path = require('path');
-const electron = require("electron");
+const electron = require("electron"); 
+const ExceptionHandler = require('./app/Exceptions/handler');
 const { app, contextBridge, BrowserWindow, ipcMain } = electron;
 const Database = require("./config/database/database");
 
@@ -34,6 +35,10 @@ const createWindow = () => {
   });
 }
 
+app.on('error', function(error) {
+  const ExceptionHandlerInstance = new ExceptionHandler(app);
+  ExceptionHandlerInstance.handleRejection(error);
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

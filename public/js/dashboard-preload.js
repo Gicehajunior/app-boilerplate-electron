@@ -17,7 +17,7 @@ class Dashboard extends MP {
                 UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${this.session['username']}`;
                 ipcRenderer.send('/alertMessage', {
                     status: 'info',
-                    title: "Welcome Message Notification",
+                    title: config.notification_title.dashboard_welcome_notification_title,
                     message: config.dashboard_welcome_notification
                 });
             }
