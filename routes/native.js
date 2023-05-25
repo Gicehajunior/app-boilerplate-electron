@@ -9,10 +9,7 @@ const RouterService = require("../config/services/Router");
  * @return response
  */
 const Routes = (BrowserWindow, ipcMain, DbConn) => {    
-    const Router = new RouterService(BrowserWindow, ipcMain, DbConn);
-
-    Router.get('/login', 'AuthController@index');
-    Router.get('/dashboard', 'AuthController@index'); 
+    const Router = new RouterService(BrowserWindow, ipcMain, DbConn); 
 
     Router.post('createTable', 'AuthController@createTable', "create-table"); 
 

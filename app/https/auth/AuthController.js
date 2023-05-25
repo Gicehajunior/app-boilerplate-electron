@@ -17,10 +17,6 @@ class AuthController extends AuthModel{
         this.post_object = undefined;  
     }
 
-    index() {
-        this.route("resources/auth/", "login"); 
-    }
-
     validatePhone(phonenumber) {
         const response = phone(phonenumber, {country: `${this.country}`}); 
         
