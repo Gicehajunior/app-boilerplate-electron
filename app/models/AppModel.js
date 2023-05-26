@@ -1,5 +1,5 @@
 const AppUserSession = require("../../config/services/SessionService");
-const App = require("../../config/app/App");
+const App = require("../../config/app/App").App;
 class AppModel extends App{
 
     constructor () { 

@@ -1,4 +1,4 @@
-const RouterService = require("../config/services/Router");
+const RouterService = require("../config/services/RouterService");
 
 /**
  * PUT your routes here, 

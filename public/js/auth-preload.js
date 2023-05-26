@@ -1,5 +1,6 @@
 require('dotenv').config();
-const config = require('../../app/Helpers/config');
+const Alert = require('../../config/app/App').initAlert;
+const config = require('../../app/Helpers/config'); 
 const MP = require('./SuperPreload/MP');
 const electron = require('electron');
 const { ipcRenderer } = electron;
@@ -12,7 +13,7 @@ class Auth extends MP {
     index() {
         if (this.windowLocation.includes("login")) {
             setTimeout(() => {
-                ipcRenderer.send('/alertMessage', {
+                Alert({
                     status: 'info',
                     title: config.notification_title.login_notification_title,
                     message: config.login_notification
@@ -20,7 +21,7 @@ class Auth extends MP {
             }, 2000);
         }
         else if (this.windowLocation.includes("reset-password")) {
-            ipcRenderer.send('/alertMessage', {
+            Alert({
                 status: 'info',
                 title: config.notification_title.reset_password_notification_title,
                 message: config.reset_password_notification
@@ -162,7 +163,7 @@ class Auth extends MP {
                 request_security_code_btn.addEventListener('click', () => {
                     request_security_code_btn.disabled = true;
                     if (email.value.length == 0) {
-                        ipcRenderer.send('/alertMessage', {
+                        Alert({
                             status: 'info',
                             title: config.notification_title.forgot_password_notification_title,
                             message: config.input_security_code_notification
@@ -176,14 +177,14 @@ class Auth extends MP {
                         ipcRenderer.on("forgot-password-response", (event, response) => {
                             var response = JSON.parse(response);  
                             if (response.status == 'OK') {
-                                ipcRenderer.send('/alertMessage', {
+                                Alert({
                                     status: 'info',
                                     title: config.notification_title.forgot_password_notification_title,
                                     message: response.message
                                 });
                             }
                             else {
-                                ipcRenderer.send('/alertMessage', {
+                                Alert({
                                     status: 'error',
                                     title: config.notification_title.forgot_password_notification_title,
                                     message: response.message
@@ -205,7 +206,7 @@ class Auth extends MP {
                     const confirm_password = document.getElementById("confirm-password");
 
                     if (security_code.value.length == 0 || password.value.length == 0 || confirm_password.value.length == 0) {
-                        ipcRenderer.send('/alertMessage', {
+                        Alert({
                             status: 'info',
                             title: config.notification_title.reset_password_notification_title,
                             message: config.fill_in_all_fields
@@ -228,7 +229,7 @@ class Auth extends MP {
                                 ipcRenderer.send("/login", "auth/login");  
                             } 
                             else {
-                                ipcRenderer.send('/alertMessage', {
+                                Alert({
                                     status: 'error',
                                     title: config.notification_title.reset_password_notification_title,
                                     message: response.message

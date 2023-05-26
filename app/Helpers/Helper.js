@@ -6,7 +6,7 @@ class Helper{
         this.BrowserWindow = BrowserWindow; 
     }
     
-    InitAlertModel(NotificationMessageObject) {
+    showAlertDialog(NotificationMessageObject) {
         const Window = this.BrowserWindow.getFocusedWindow(); 
 
         dialog.showMessageBox(Window, {

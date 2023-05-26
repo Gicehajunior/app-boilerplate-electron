@@ -1,4 +1,5 @@
 require('dotenv').config();
+const Alert = require('../../config/app/App').initAlert;
 const config = require('../../app/Helpers/config');
 const MP = require('./SuperPreload/MP');
 const electron = require('electron');
@@ -15,7 +16,7 @@ class Dashboard extends MP {
         UsernameDomElements.forEach(UsernameDomElement => {
             if (document.body.contains(UsernameDomElement)) {
                 UsernameDomElement.innerHTML = `<i class="fa fa-user-circle" aria-hidden="true"></i> ${this.session['username']}`;
-                ipcRenderer.send('/alertMessage', {
+                Alert({
                     status: 'info',
                     title: config.notification_title.dashboard_welcome_notification_title,
                     message: config.dashboard_welcome_notification
