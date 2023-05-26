@@ -37,7 +37,7 @@ const createWindow = () => {
 
 app.on('error', function(error) {
   const ExceptionHandlerInstance = new ExceptionHandler(app);
-  ExceptionHandlerInstance.handleRejection(error);
+  ExceptionHandlerInstance.handle(error);
 });
 
 // This method will be called when Electron has finished

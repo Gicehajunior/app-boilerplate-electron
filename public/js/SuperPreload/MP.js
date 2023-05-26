@@ -20,6 +20,7 @@ class MP {
             input.value = null;
         });
     }
+    
 }
 
 module.exports = MP;

@@ -1,13 +1,19 @@
 
 const fs = require("fs");
 const mail = require('./mail');
-const electron = require("electron"); 
-const { app, contextBridge, BrowserWindow, ipcMain } = electron;
+const electron = require("electron");
+const { ipcRenderer } = electron;
+const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
+
 class App{
 
     constructor(file_name = undefined) {  
         this.file = file_name; 
-        this.current_directory = process.cwd();
+        this.current_directory = process.cwd(); 
+    }
+
+    initAlert(message) {
+        ipcRenderer.send('/alertMessage', message);
     }
 
     file_parser(file_name, post_object = undefined) { 
@@ -48,7 +54,7 @@ class App{
         return trimmed_str.trim();
     }
 
-    route(view, route, data = {}) { 
+    route(view, route, data = {}) {  
         var current_app_dir = `${this.current_directory}`
         const CurrentWindow = BrowserWindow.getFocusedWindow();
         const path_route = `${current_app_dir}/${view}/${route}.html`;
@@ -57,4 +63,4 @@ class App{
     }
 }
 
-module.exports = App;
+module.exports = {App: App, initAlert: (new App()).initAlert};
