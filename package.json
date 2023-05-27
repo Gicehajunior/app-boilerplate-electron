@@ -3,8 +3,7 @@
     "version": "1.0.0",
     "description": "A desktop application boilerplate made with node electron framework.",
     "main": "main.js",
-    "scripts": {
-        "preinstall": "node ./config/services/DatabaseService.js",
+    "scripts": { 
         "postinstall": "bower install",
         "start": "nodemon --watch . --exec electron . --no-sandbox --enable-logging=file --log-file=./public/logs/electron_debug.log"
     },

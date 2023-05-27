@@ -2,9 +2,9 @@
 require('dotenv').config(); 
 const path = require('path');
 const electron = require("electron"); 
+const Routes = require('./routes/native')
 const ExceptionHandler = require('./app/Exceptions/handler');
-const { app, contextBridge, BrowserWindow, ipcMain } = electron;
-const Database = require("./config/database/database");
+const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
 
 const createWindow = () => {
   // Create the browser window.
@@ -65,13 +65,4 @@ app.on('window-all-closed', () => {
   }
 });
 
-const DB = new Database(
-  process.env.DB_CONNECTION, 
-  process.env.DB_HOST, 
-  process.env.DB_PORT, 
-  process.env.DB_NAME, 
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD
-);
-
-DB.initDbConnection(DB, BrowserWindow, ipcMain);
+Routes(BrowserWindow, ipcMain);

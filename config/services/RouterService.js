@@ -1,5 +1,8 @@
 const fs = require('fs'); 
+const electron = require("electron"); 
 const Helper = require('../../app/Helpers/helper');
+const ExceptionHandler = require('../../app/Exceptions/handler'); 
+const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
 
 class RouterService {
     constructor(BrowserWindow, ipcMain, DbConn) { 
@@ -48,13 +51,21 @@ class RouterService {
         this.response_medium = response_medium;
         var response = data; 
 
-        if (this.controller == 'helper') {  
-            (new Helper(this.BrowserWindow)).showAlertDialog(data); 
+        if (!this.controller.includes('Controller')) {  
+            if (this.controller == 'helper') {
+                (new Helper(this.BrowserWindow)).showAlertDialog(data);
+            }
+            else {
+                app.on('error', function(error) {
+                    const ExceptionHandlerInstance = new ExceptionHandler(app);
+                    ExceptionHandlerInstance.handle(error);
+                });
+            } 
         }
         else {
             let controller_class = this.RequireModule();  
             
-            let controller_class_instance = new controller_class(this.BrowserWindow, this.DBConnection); 
+            let controller_class_instance = new controller_class(this.BrowserWindow); 
             response = controller_class_instance[this.method_name](data);   
             this.run_response_channel(event, this.response_medium, response);
         }   

@@ -2,18 +2,18 @@ const path = require('path');
 const fs = require("fs");
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
-const {phone} = require('phone'); 
+const {phone} = require('phone');
+const DB = require('../../../config/DB');
 const config = require("../../Helpers/config");
-const DashboardModel = require("../../models/DashboardModel"); 
+const DashboardModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
-const Util = require("../../../config/utils/Utils");  
+const Util = require("../../utils/Utils");
 
 class DashboardController extends DashboardModel{
 
-    constructor(BrowserWindow = undefined, db = undefined) {
+    constructor(BrowserWindow = undefined) {
         super(); 
-        this.BrowserWindow = BrowserWindow;
-        this.db = db;
+        this.BrowserWindow = BrowserWindow; 
         this.post_object = undefined; 
     }
     
