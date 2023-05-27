@@ -3,14 +3,10 @@ class AuthModel extends AppModel{
     
     constructor() {
         super();
-    }
 
-    database_table() {
-        const table = [
-            "users"
-        ];
-
-        return table;
+        this.table = {
+            users: "users"
+        };
     }
  
 }

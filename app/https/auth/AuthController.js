@@ -2,18 +2,18 @@ const path = require('path');
 const fs = require("fs");
 const bcrypt = require('bcrypt'); 
 const EmailValidator = require('validator');  
-const {phone} = require('phone'); 
+const {phone} = require('phone');
+const DB = require('../../../config/DB');
 const config = require("../../Helpers/config");
 const AuthModel = require("../../models/AuthModel");
 const Mailer = require("../../../config/services/MailerService"); 
-const Util = require("../../../config/utils/Utils"); 
+const Util = require("../../utils/Utils"); 
 
 class AuthController extends AuthModel{
 
-    constructor(BrowserWindow = undefined, db = undefined) {
+    constructor(BrowserWindow = undefined) {
         super(); 
-        this.BrowserWindow = BrowserWindow;
-        this.db = db;  
+        this.BrowserWindow = BrowserWindow; 
         this.post_object = undefined;  
     }
 
@@ -36,30 +36,11 @@ class AuthController extends AuthModel{
                 callback(config.errors.invalid_contact);
             }
             else {
-                if (this.database_type == "sqlite") { 
-                    this.db.all(`SELECT * FROM users WHERE email = ?`, [usersInfo.email], (err, rows) => {
-                        if(err){
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback(err); 
-                        }else{
-                            callback(rows[0]);
-                        }
-                    });
-                }
-                else if (this.database_type == "mysql") {
-                    const sql = `SELECT * FROM users WHERE email = '${usersInfo.email}'`;
-                    this.db.query(sql, (err, rows) => {
-                        if (err) {
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback(err); 
-                        }
-                        else { 
-                            callback(rows[0]);
-                        }
-                    });  
-                }
+                const util = new Util();
+                util.select(this.table.users, ['*']);
+                util.where({ email: usersInfo.email }).then(rows => {
+                    callback(rows[0]);
+                }); 
             }
         }
         const response_promise = new Promise(resolve => {
@@ -85,7 +66,7 @@ class AuthController extends AuthModel{
                     else { 
                         bcrypt.genSalt(saltRounds, (err, salt) => {
                             bcrypt.hash(usersInfo.password, salt, (err, hash) => {
-                                // Crone jobs will be implemented to handle this type of error!
+                                
                                 if (err) {
                                     console.log(err);
                                     callback(err);
@@ -96,8 +77,8 @@ class AuthController extends AuthModel{
                                 }
                                 else {
                                     usersInfo.password = hash;
-                                    const DBUtil = new Util(this.db, this.database_table()[0]);
-                                    DBUtil.save_resource(JSON.stringify(usersInfo)).then(response => { 
+                                    const util = new Util();
+                                    util.save_resource(JSON.stringify(usersInfo)).then(response => { 
                                         if (response == true) {
                                             resolve({status: 'OK', message: config.success.create_account});
                                         } 
@@ -126,30 +107,11 @@ class AuthController extends AuthModel{
                 callback({status: 'fail', message: config.errors.invalid_email});
             }
             else {
-                if (this.database_type == "sqlite") {
-                    this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
-                        if(err){
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback(err); 
-                        }else{
-                            callback(rows[0]);
-                        }
-                    });
-                }
-                else if (this.database_type == "mysql") {
-                    const sql = `SELECT * FROM users WHERE email = '${usersInfo.email}'`;
-                    this.db.query(sql, (err, rows) => {
-                        if (err) {
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback(err);
-                        }
-                        else { 
-                            callback(rows[0]);
-                        }
-                    });  
-                }
+                const util = new Util();
+                util.select(this.table.users, ['*']);
+                util.where({ email: email }).then(rows => {
+                    callback(rows[0]);
+                });
             }
         }
 
@@ -165,7 +127,7 @@ class AuthController extends AuthModel{
                 }
                 else if (row.email == usersInfo.email) {  
                     bcrypt.compare(usersInfo.password, row.password, (err, result) => {
-                        // Crone jobs will be implemented to handle this type of error!
+                        
                         if (err) {
                             console.log(err);
                             callback({status: 'OK', message: err});
@@ -209,35 +171,14 @@ class AuthController extends AuthModel{
             else if (!EmailValidator.isEmail(email)) { 
                 resolve({status: 'fail', message: config.errors.invalid_email});
             } 
-            else {
-                if (this.database_type == "sqlite") {
-                    this.db.all(`SELECT rowid, * FROM users WHERE email = ?`, [email], (err, rows) => {
-                        if(err){
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback({status: 'fail', message: err}); 
-                        }else{ 
-                            if(rows[0] !== undefined) {
-                                this.auth.save_session(JSON.stringify({"id":rows[0].rowid, "email": email}));
-                            }
-                        }
-                    });
-                }
-                else if (this.database_type == "mysql") {
-                    const sql = `SELECT * FROM users WHERE email = '${email}'`;
-                    this.db.query(sql, (err, rows) => {
-                        if (err) {
-                            // Crone jobs will be implemented to handle this type of error!
-                            console.log(err);
-                            callback({status: 'fail', message: err}); 
-                        }
-                        else { 
-                            if(rows[0] !== undefined) {
-                                this.auth.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
-                            }
-                        }
-                    });  
-                }  
+            else { 
+                const util = new Util();
+                util.select(this.table.users, ['*']);
+                util.where({ email: email }).then(rows => {
+                    if(rows[0] !== undefined) {
+                        this.auth.save_session(JSON.stringify({"id":rows[0].id, "email": email}));
+                    }
+                });
  
                 this.session = this.session;
 
@@ -264,11 +205,11 @@ class AuthController extends AuthModel{
                             }
                             else if (send_email_response.response.includes("OK")) {
                                 // save security code on database 
-                                const DBUtil = new Util(this.db,  this.database_table()[0]);
+                                const util = new Util(DB );
                                 this.post_object = JSON.stringify({"reset_pass_security_code": security_code}); 
                                 if (this.session !== undefined) {
                                     if ('id' in this.session) {
-                                        DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
+                                        util.update_resource_by_id(this.post_object, this.session["id"]).then(response => {
                                             if (response == true) { 
                                                 this.route("resources/auth/", "reset-password");
                                             } 
@@ -302,36 +243,16 @@ class AuthController extends AuthModel{
         let object = JSON.parse(post_object);     
          
         const getRow = (callback) => { 
-             
-            if (this.database_type == "sqlite") { 
-                this.db.all(`SELECT rowid, * FROM users WHERE rowid = ?`, [this.session["id"]], (err, rows) => {
-                    if(err){
-                        // Crone jobs will be implemented to handle this type of error!
-                        console.log(err);
-                        callback(err); 
-                    }else{  
-                        callback(rows[0]);
-                    }
-                });
-            }
-            else if (this.database_type == "mysql") {
-                const sql = `SELECT * FROM users WHERE id = '${this.session["id"]}'`;
-                this.db.query(sql, (err, rows) => {
-                    if (err) {
-                        // Crone jobs will be implemented to handle this type of error!
-                        console.log(err);
-                        callback(err);
-                    }
-                    else { 
-                        callback(rows[0]);
-                    }
-                });  
-            } 
+            const util = new Util();
+            util.select(this.table.users, ['*']);
+            util.where({ rowid: this.session["id"] }).then(rows => {
+                callback(rows[0]);
+            }); 
         }
 
         const reset_pass_response_promise = new Promise(resolve => {
             const callbackFunc = (row) => { 
-                
+                console.log(row);
                 if (row == undefined) {
                     resolve({status: 'fail', message: config.errors.user_not_exists});
                 }  
@@ -346,7 +267,7 @@ class AuthController extends AuthModel{
 
                         bcrypt.genSalt(saltRounds, (err, salt) => {
                             bcrypt.hash(object.password, salt, (err, hash) => {
-                                // Crone jobs will be implemented to handle this type of error!
+                                
                                 if (err) { 
                                     resolve({status: 'fail', message: config.errors.unexpected_error});
                                 } 
@@ -363,8 +284,8 @@ class AuthController extends AuthModel{
                                         "updated_at": this.updated_at
                                     }); 
 
-                                    const DBUtil = new Util(this.db, this.database_table()[0]);
-                                    DBUtil.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
+                                    const util = new Util();
+                                    util.update_resource_by_id(this.post_object, this.session["id"]).then(response => { 
                                         if (response == true) {
                                             this.route("resources/auth/", "login");    
                                         } 
@@ -403,8 +324,8 @@ class AuthController extends AuthModel{
         const response_promise = new Promise(resolve => {
             if (this.database_type == "sqlite") {
                 try { 
-                    this.db.serialize(() => {
-                        this.db.run(sql_query);
+                    DB.serialize(() => {
+                        DB.run(sql_query);
                         
                         resolve({status: 'OK', message: `${table} table creation success`});
                     });  
@@ -413,7 +334,7 @@ class AuthController extends AuthModel{
                 } 
             }
             else if (this.database_type == "mysql") { 
-                this.db.query(sql_query, (err, result) => {
+                DB.query(sql_query, (err, result) => {
                     if (err) {  
                         resolve({status: 'fail', message: `${table} table creation fail`});
                     }
@@ -427,9 +348,7 @@ class AuthController extends AuthModel{
         return response_promise;
     }
     
-    logoutUser() {  
-        const CurrentWindow = this.BrowserWindow.getFocusedWindow();
-        
+    logoutUser() {   
         this.auth.delete_session().then((response) => {
             console.log(response);
         }).catch(error => {

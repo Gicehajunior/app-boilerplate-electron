@@ -8,8 +8,8 @@ const RouterService = require("../config/services/RouterService");
  * 
  * @return response
  */
-const Routes = (BrowserWindow, ipcMain, DbConn) => {    
-    const Router = new RouterService(BrowserWindow, ipcMain, DbConn); 
+const Routes = (BrowserWindow, ipcMain) => {    
+    const Router = new RouterService(BrowserWindow, ipcMain); 
 
     Router.post('createTable', 'AuthController@createTable', "create-table"); 
 

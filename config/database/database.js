@@ -1,5 +1,4 @@
-const Routes = require("../../routes/native");
-const sqlite3 = require('sqlite3').verbose();
+ const sqlite3 = require('sqlite3').verbose();
 const mysql = require('mysql');
 
 class Database {
@@ -22,7 +21,7 @@ class Database {
         const connection_response_promise = new Promise(resolve => {
             connection.connect((err) => {
                 if (err) {
-                    // Crone jobs will be implemented to handle this type of error! 
+                     
                     resolve(err.message);
                 } 
                 else {
@@ -69,7 +68,7 @@ class Database {
         const db = new sqlite3.Database(business_elite_database ? `config/database/dump/${business_elite_database}.db` : ':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
         (err) => { 
             if (err) {
-                // Crone jobs will be implemented to handle this type of error!
+                
                 console.log(err);
                 if (err.message == "SQLITE_CANTOPEN: unable to open database file") {
                     db.run(`CREATE DATABASE [${business_elite_database}]`);
@@ -84,22 +83,17 @@ class Database {
         return db
     }
 
-    initDbConnection(DB, BrowserWindow, ipcMain) {  
-        var DB = DB;
-        var BrowserWindow = BrowserWindow;
-        var ipcMain = ipcMain;
-        var DbConn = undefined;
+    initDbConnection() {   
+        let connection_response = undefined;
 
         if (process.env.DB_CONNECTION == "mysql") {
-            let connection_response = DB.mysql_connection(process.env.DB_NAME);
-            connection_response.then(DbConn => {  
-                Routes(BrowserWindow, ipcMain, DbConn);
-            });  
+            connection_response = this.mysql_connection(process.env.DB_NAME); 
         }
         else if (process.env.DB_CONNECTION == "sqlite") {
-            DbConn = DB.sqlite3_connection(process.env.DB_NAME);
-            Routes(BrowserWindow, ipcMain, DbConn);
+            connection_response = this.sqlite3_connection(process.env.DB_NAME); 
         } 
+
+        return connection_response
     }
 }
 
