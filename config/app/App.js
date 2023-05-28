@@ -12,7 +12,7 @@ class App{
         this.current_directory = process.cwd(); 
     }
 
-    initAlert(message) {
+    alert(message) {
         ipcRenderer.send('/alertMessage', message);
     }
 
@@ -63,4 +63,4 @@ class App{
     }
 }
 
-module.exports = {App: App, initAlert: (new App()).initAlert};
+module.exports = {App: App, alert: (new App()).alert};

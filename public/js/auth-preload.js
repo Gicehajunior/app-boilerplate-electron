@@ -1,5 +1,5 @@
 require('dotenv').config();
-const Alert = require('../../config/app/App').initAlert;
+const Alert = require('../../config/app/App').alert;
 const config = require('../../app/Helpers/config'); 
 const MP = require('./SuperPreload/MP');
 const electron = require('electron');
