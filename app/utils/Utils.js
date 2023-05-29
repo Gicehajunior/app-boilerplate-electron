@@ -159,7 +159,8 @@ class Util {
         return inline_object_list_string;
     } 
     
-    save_resource(post_object = {}) {
+    save_resource(table, post_object = {}) {
+        this.database_table = table; 
         const response_promise = new Promise(resolve => {
             try {  
                 let object = JSON.parse(post_object);
@@ -201,7 +202,8 @@ class Util {
         return response_promise;
     }
     
-    update_resource_by_id(post_object = {}, id) {  
+    update_resource_by_id(table, post_object = {}, id) { 
+        this.database_table = table;
         const response_promise = new Promise(resolve => {
             try { 
                 let object = JSON.parse(post_object);

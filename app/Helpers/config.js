@@ -21,6 +21,7 @@ module.exports = {
         dashboard_welcome_notification_title: "Welcome Message Notification"
     },
     errors: {
+        empty_credentials: `Empty auth credentials`,
         fill_in_all_fields: `Please fill in all fields to login!`,
         empty_email: `Empty email`,
         invalid_email: `Email is invalid. Please correct your email to proceed!`,

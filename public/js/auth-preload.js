@@ -77,85 +77,64 @@ class Auth extends MP {
                 const username = document.getElementById("username");
                 const tel = document.getElementById("tel");
 
-                if (username.value.length == 0 ||
-                    email.value.length == 0 ||
-                    tel.value.length == 0 ||
-                    password.value.length == 0
-                ) {
-                    users_message.innerHTML = config.fill_in_all_fields;
-                    users_message.style.color = "red";
+                const usersInfo = {
+                    "whoiam": 2,
+                    "username": username.value,
+                    "email": email.value,
+                    "contact": tel.value,
+                    "password": password.value,
+                    "reset_pass_security_code": 0,
+                    "created_at": "",
+                    "updated_at": ""
+                };
+
+                ipcRenderer.invoke("registerUser", JSON.stringify(usersInfo));
+
+                ipcRenderer.on("save-users", (event, response) => {
+                    var response = JSON.parse(response);
+
+                    if (response.status == 'OK') {
+                        this.clearFormInputs();
+                        users_message.innerHTML = response.message;
+                        users_message.style.color = "green"; 
+                    }
+                    else {
+                        users_message.innerHTML = response.message;
+                        users_message.style.color = "red";
+                    }
+
                     register_btn.innerHTML = config.register_button_innerhtml_context;
                     register_btn.disabled = false;
-                }
-                else {
-                    const usersInfo = {
-                        "whoiam": 2,
-                        "username": username.value,
-                        "email": email.value,
-                        "contact": tel.value,
-                        "password": password.value,
-                        "reset_pass_security_code": 0,
-                        "created_at": "",
-                        "updated_at": ""
-                    };
-
-                    ipcRenderer.invoke("registerUser", JSON.stringify(usersInfo));
-
-                    ipcRenderer.on("save-users", (event, response) => {
-                        var response = JSON.parse(response);
-
-                        if (response.status == 'OK') {
-                            this.clearFormInputs();
-                            users_message.innerHTML = response.message;
-                            users_message.style.color = "green"; 
-                        }
-                        else {
-                            users_message.innerHTML = response.message;
-                            users_message.style.color = "red";
-                        }
-
-                        register_btn.innerHTML = config.register_button_innerhtml_context;
-                        register_btn.disabled = false;
-                    });
-                }
+                });
+                
             });
         }
         else if (document.body.contains(login_user_form)) {
             login_user_btn.addEventListener("click", (event) => {
                 event.preventDefault();
-                login_user_btn.disabled = true;
-                if (email.value.length == 0 ||
-                    password.value.length == 0
-                ) {
-                    users_message.innerHTML = config.errors.fill_in_all_fields;
-                    users_message.style.color = "red";
-                    login_user_btn.innerHTML = config.login_button_innerhtml_context;
-                    login_user_btn.disabled = false;
-                }
-                else {
-                    const usersInfo = {
-                        "email": email.value,
-                        "password": password.value,
-                    };
+                login_user_btn.disabled = true; 
+                const usersInfo = {
+                    "email": email.value,
+                    "password": password.value,
+                };
 
-                    const loginUser = ipcRenderer.invoke("loginUser", JSON.stringify(usersInfo));
+                ipcRenderer.invoke("loginUser", JSON.stringify(usersInfo));
 
-                    ipcRenderer.on("login-response", (event, response) => {
-                        var response = JSON.parse(response);  
-                        if (response.status == 'OK') {
-                            users_message.innerHTML = response.message;
-                            users_message.style.color = "green";
-                            this.clearFormInputs(); 
-                        }
-                        else {
-                            users_message.innerHTML = response.message;
-                            users_message.style.color = "red";
-                            login_user_btn.disabled = false;
-                        } 
+                ipcRenderer.on("login-response", (event, response) => {
+                    var response = JSON.parse(response);  
+                    if (response.status == 'OK') {
+                        users_message.innerHTML = response.message;
+                        users_message.style.color = "green";
+                        this.clearFormInputs(); 
+                    }
+                    else {
+                        users_message.innerHTML = response.message;
+                        users_message.style.color = "red";
+                        login_user_btn.disabled = false;
+                    } 
 
-                        login_user_btn.innerHTML = config.login_button_innerhtml_context; 
-                    });
-                }
+                    login_user_btn.innerHTML = config.login_button_innerhtml_context; 
+                }); 
             });
         }
         else if (document.body.contains(forgot_password)) {
