@@ -48,7 +48,7 @@ class Database {
             password: this.database_password,
             database: this.database_name
         });
-          
+        
         const connection_response_promise = new Promise(resolve => { 
             connection.connect((err) => {
                 if (err) {  
@@ -64,14 +64,14 @@ class Database {
         return connection_response_promise;
     }
 
-    sqlite3_connection(business_elite_database) {  
-        const db = new sqlite3.Database(business_elite_database ? `config/database/dump/${business_elite_database}.db` : ':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
+    sqlite3_connection(db_name) {  
+        const db = new sqlite3.Database(db_name ? `config/database/dump/${db_name}.db` : ':memory:', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, 
         (err) => { 
             if (err) {
                 
                 console.log(err);
                 if (err.message == "SQLITE_CANTOPEN: unable to open database file") {
-                    db.run(`CREATE DATABASE [${business_elite_database}]`);
+                    db.run(`CREATE DATABASE [${db_name}]`);
                     
                     return db;
                 }
