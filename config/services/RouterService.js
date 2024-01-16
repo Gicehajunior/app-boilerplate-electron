@@ -1,6 +1,6 @@
 const fs = require('fs'); 
 const electron = require("electron"); 
-const Helper = require('../../app/Helpers/helper');
+const Helper = require('../../app/Helpers/Helper');
 const ExceptionHandler = require('../../app/Exceptions/handler'); 
 const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
 
