@@ -1,19 +1,10 @@
 // Modules to control application life and create native browser window
-const electron = require("electron");
-const { app, contextBridge, BrowserWindow, ipcMain } = electron;
-const path = require('path');
 require('dotenv').config(); 
-
-const Database = require("./config/database/database");
-
-const DB = new Database(
-  process.env.DB_CONNECTION, 
-  process.env.DB_HOST, 
-  process.env.DB_PORT, 
-  process.env.DB_NAME, 
-  process.env.DB_USERNAME,
-  process.env.DB_PASSWORD
-);
+const path = require('path');
+const electron = require("electron"); 
+const Routes = require('./routes/native')
+const ExceptionHandler = require('./app/Exceptions/handler');
+const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
 
 const createWindow = () => {
   // Create the browser window.
@@ -23,8 +14,9 @@ const createWindow = () => {
     minWidth:700,
     minHeight:600,
     webPreferences: {  
-      preload: path.join(__dirname, 'public/js/preload.js')
+      preload: path.join(__dirname, 'public/js/main-preload.js')
     }, 
+    icon: path.join(__dirname, 'public/storage/icons/sp-logo.png')
   }); 
 
   // and load the index.html of the app.
@@ -43,6 +35,10 @@ const createWindow = () => {
   });
 }
 
+app.on('error', function(error) {
+  const ExceptionHandlerInstance = new ExceptionHandler(app);
+  ExceptionHandlerInstance.handle(error);
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -69,18 +65,4 @@ app.on('window-all-closed', () => {
   }
 });
 
-const Routes = require("./routes/native");
-
-let DbConn;
-if (process.env.DB_CONNECTION == "mysql") {
-  let connection_response = DB.mysql_connection(process.env.DB_NAME);
-  connection_response.then(DbConn => {  
-    Routes(BrowserWindow, ipcMain, DbConn);
-  });  
-}
-else if (process.env.DB_CONNECTION == "sqlite") {
-  DbConn = DB.sqlite3_connection(process.env.DB_NAME);
-  Routes(BrowserWindow, ipcMain, DbConn);
-} 
-
-  
+Routes(BrowserWindow, ipcMain);

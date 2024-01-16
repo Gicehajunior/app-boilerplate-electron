@@ -1,4 +1,8 @@
 const fs = require('fs'); 
+const electron = require("electron"); 
+const Helper = require('../../app/Helpers/Helper');
+const ExceptionHandler = require('../../app/Exceptions/handler'); 
+const { app, contextBridge, BrowserWindow, ipcMain } = electron; 
 
 class RouterService {
     constructor(BrowserWindow, ipcMain, DbConn) { 
@@ -9,7 +13,7 @@ class RouterService {
         this.method_name = undefined;
         this.response_medium = undefined;
 
-        this.get('/alertMessage', 'Helper@InitAlertModel');
+        this.get('/alertMessage', 'helper@showAlertDialog');
     }
 
     post(route, controller, response_medium = undefined) {  
@@ -40,42 +44,31 @@ class RouterService {
         });
     }
 
-    route_process(controller, response_medium, event, data) {
+    route_process(controller, response_medium, event, data = {}) {
         const controller_method_array = controller.split("@");
-
         this.controller = controller_method_array[0].replace("'", "");
+        this.method_name = controller_method_array[1].replace("'", "");  
+        this.response_medium = response_medium;
+        var response = data; 
 
-        this.method_name = controller_method_array[1].replace("'", ""); 
-
-        try {
-            let config = this.RequireModule();
-            let controller_class = config.controller_class;
-            let resolved_path = config.resolved_path;
-            let controller_class_instance = undefined;
-
-            if (this.controller == 'Helper') {
-                controller_class_instance = new controller_class(this.BrowserWindow);
+        if (!this.controller.includes('Controller')) {  
+            if (this.controller == 'helper') {
+                (new Helper(this.BrowserWindow)).showAlertDialog(data);
             }
             else {
-                controller_class_instance = new controller_class(this.BrowserWindow, this.DBConnection);
+                app.on('error', function(error) {
+                    const ExceptionHandlerInstance = new ExceptionHandler(app);
+                    ExceptionHandlerInstance.handle(error);
+                });
             } 
-
-            const responsepromise = controller_class_instance[this.method_name](data); 
-
-            this.response_medium = response_medium;
-
-            this.run_response_channel(event, `${process.cwd()}/${resolved_path}/${this.controller}.js`, responsepromise, this.response_medium);
-        } catch (error) { 
-            if (process.env.DEBUG.toUpperCase() == 'TRUE') {
-                if (this.controller == 'Helper') {
-                    throw new Error(`${this.controller} class not found!`);
-                }
-                else {
-                    throw new Error(`${this.controller} Controller not found!`);
-                } 
-
-            }
-        } 
+        }
+        else {
+            let controller_class = this.RequireModule();  
+            
+            let controller_class_instance = new controller_class(this.BrowserWindow); 
+            response = controller_class_instance[this.method_name](data);   
+            this.run_response_channel(event, this.response_medium, response);
+        }   
     }
 
     RequireModule() {
@@ -86,23 +79,20 @@ class RouterService {
         }
         else if (fs.existsSync(`${process.cwd()}/app/https/controllers/${this.controller}.js`)) {
             resolved_path = `app/https/controllers/`;
-        }
-        else if (this.controller == 'Helper') {
-            resolved_path = `app/Helpers/`;
-        }  
+        } 
         
         let controller_class = require(`../../${resolved_path}${this.controller}`);
 
-        return {controller_class: controller_class, resolved_path: resolved_path};
+        return controller_class;
     }
 
-    run_response_channel(event, controller_module, responsepromise, response_medium = undefined) {  
-        if (fs.existsSync(controller_module)) {
-            Promise.resolve(responsepromise).then(value => {  
+    run_response_channel(event, response_medium = undefined, response = undefined) { 
+        if (response instanceof Promise) {
+            Promise.resolve(response).then(value => {  
                 if (value) {
-                    event.sender.send(response_medium, `${value}`);
+                    event.sender.send(response_medium, `${JSON.stringify(value)}`);
                 } 
-            });
+            }); 
         } 
     }
     

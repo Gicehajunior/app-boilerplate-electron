@@ -1,3 +1,4 @@
+require('dotenv').config();
 const AppUserSession = require("../../../config/services/SessionService");
 
 class MP {
@@ -11,6 +12,15 @@ class MP {
 
         this.windowLocation = window.location.href;
     }
+
+    clearFormInputs() {
+        const formInputs = document.querySelectorAll('.form-control');
+
+        formInputs.forEach(input => {
+            input.value = null;
+        });
+    }
+    
 }
 
 module.exports = MP;

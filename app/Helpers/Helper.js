@@ -6,7 +6,7 @@ class Helper{
         this.BrowserWindow = BrowserWindow; 
     }
     
-    InitAlertModel(NotificationMessageObject) {
+    showAlertDialog(NotificationMessageObject) {
         const Window = this.BrowserWindow.getFocusedWindow(); 
 
         dialog.showMessageBox(Window, {
@@ -26,6 +26,7 @@ class Helper{
             normalizeAccessKeys: (NotificationMessageObject.normalizeAccessKeys) ? NotificationMessageObject.normalizeAccessKeys : undefined
         });
     } 
+
 }
 
 module.exports = Helper;

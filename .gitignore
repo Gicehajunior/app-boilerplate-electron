@@ -3,6 +3,7 @@ tests
 node_modules/
 public/assets/bootstrap
 public/assets/jquery
-config/database/dump/*
+config/database/dump/*.sql
+config/database/dump/*.db
 public/logs/electron_debug.log
-public/Session Storage 
+public/Session Storage

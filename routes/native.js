@@ -1,4 +1,4 @@
-const RouterService = require("../config/services/Router");
+const RouterService = require("../config/services/RouterService");
 
 /**
  * PUT your routes here, 
@@ -8,11 +8,8 @@ const RouterService = require("../config/services/Router");
  * 
  * @return response
  */
-const Routes = (BrowserWindow, ipcMain, DbConn) => {    
-    const Router = new RouterService(BrowserWindow, ipcMain, DbConn);
-
-    Router.get('/login', 'AuthController@index');
-    Router.get('/dashboard', 'AuthController@index'); 
+const Routes = (BrowserWindow, ipcMain) => {    
+    const Router = new RouterService(BrowserWindow, ipcMain); 
 
     Router.post('createTable', 'AuthController@createTable', "create-table"); 
 
