@@ -14,6 +14,9 @@ const createWindow = () => {
     minWidth:700,
     minHeight:600,
     webPreferences: {  
+      webSecurity: false,
+      nodeIntegration: true,
+      contextIsolation: false, //Set this to false, To prevent javascript being set on disable mode.
       preload: path.join(__dirname, 'public/js/main-preload.js')
     }, 
     icon: path.join(__dirname, 'public/storage/icons/sp-logo.png')
